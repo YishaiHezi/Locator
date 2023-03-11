@@ -18,13 +18,9 @@
 
 		<!--
              TODO: Before you run your application, you need a Google Maps API key.
-
              To get one, follow the directions here:
 
                 https://developers.google.com/maps/documentation/android-sdk/get-api-key
-
-
-
 
              Once you have your API key (it starts with "AIza"), define a new property in your
              project's local.properties file (e.g. MAPS_API_KEY=Aiza...), and replace the
@@ -35,9 +31,10 @@
 			android:value="${MAPS_API_KEY}"/>
 
 		<activity
-			android:name=".MapsActivity"
+			android:name=".MapActivity"
 			android:exported="true"
-			android:label="@string/title_activity_maps">
+			android:label="@string/title_activity_maps"
+			android:screenOrientation="portrait">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 
