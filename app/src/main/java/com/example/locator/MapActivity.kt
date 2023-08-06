@@ -1,19 +1,24 @@
 package com.example.locator
 
+import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Location
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
@@ -24,6 +29,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 	private lateinit var mMap: GoogleMap
 	private var mapIsReady: Boolean = false
 	private var isResume: Boolean = false
+	private var isFirstTime: Boolean = true
 
 
 
@@ -44,12 +50,27 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 				// Add marker in the user's location, and moves the camera to this location.
 				val userLocationCoords = LatLng(lat, lon)
-				mMap.addMarker(MarkerOptions().position(userLocationCoords).title("This is your location!"))
-				mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
+				mMap.addMarker(MarkerOptions()
+					.position(userLocationCoords)
+					.title("This is your location!")
+					.icon(bitmapDescriptorFromVector(this@MapActivity , R.drawable.baseline_circle_24)))
+				if (isFirstTime) {
+					mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
+					isFirstTime = false
+				}
 			}
 			else{
 				Toast.makeText(this@MapActivity, "we couldn't find your location!", Toast.LENGTH_SHORT).show()
 			}
+		}
+	}
+
+	private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+		return ContextCompat.getDrawable(context, vectorResId)?.run {
+			setBounds(0, 0, intrinsicWidth, intrinsicHeight)
+			val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+			draw(Canvas(bitmap))
+			BitmapDescriptorFactory.fromBitmap(bitmap)
 		}
 	}
 
