@@ -12,7 +12,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -30,8 +37,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 	private var mapIsReady: Boolean = false
 	private var isResume: Boolean = false
 	private var isFirstTime: Boolean = true
-
-
 
 	private lateinit var fusedLocationClient: FusedLocationProviderClient
 	private var locationCallback: LocationCallback = object : LocationCallback() {
@@ -65,6 +70,50 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 		}
 	}
 
+
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+
+
+		// Check for permission
+		requestPermissionsIfNeeded()
+
+		fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+		setContentView(R.layout.map_activity)
+
+		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
+		val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+		mapFragment.getMapAsync(this)
+
+
+	}
+
+
+	override fun onResume() {
+		super.onResume()
+		isResume = true
+
+		tryTrackingAfterTheUser()
+	}
+
+
+	override fun onStop() {
+		super.onStop()
+		stopTrackingAfterTheUser()
+	}
+
+
+	private fun requestPermissionsIfNeeded(){
+		if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+			ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 1)
+			return
+		}
+	}
+
+
+
 	private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
 		return ContextCompat.getDrawable(context, vectorResId)?.run {
 			setBounds(0, 0, intrinsicWidth, intrinsicHeight)
@@ -81,36 +130,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 	}
 
 
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
-
-
-		// Check for permission
-		if (!areLocationPermissionsSet()) {
-			ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 1)
-		}
-
-		fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-		setContentView(R.layout.map_activity)
-
-		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
-		val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-		mapFragment.getMapAsync(this)
-
-
-	}
-
-
-
-	private fun areLocationPermissionsSet() : Boolean{
-		if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-			ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			return false
-		}
-		return true
-	}
-
 
 	/**
 	 * Manipulates the map once available.
@@ -125,20 +144,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 		mMap = googleMap
 		mapIsReady = true
 		tryTrackingAfterTheUser()
-	}
-
-
-	override fun onResume() {
-		super.onResume()
-		isResume = true
-
-		tryTrackingAfterTheUser()
-	}
-
-
-	override fun onStop() {
-		super.onStop()
-		stopTrackingAfterTheUser()
 	}
 
 
@@ -178,14 +183,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 		return locationRequest
 	}
 
-	private fun createLocationRequest() : LocationRequest{
-		val locationRequest = LocationRequest.create().apply {
-			interval = 10000
-			fastestInterval = 5000
-			priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-		}
-
-		return locationRequest
+	private fun createLocationRequest(): LocationRequest {
+		return LocationRequest.Builder(10000).build()
 	}
 
 
