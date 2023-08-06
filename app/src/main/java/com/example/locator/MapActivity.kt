@@ -23,7 +23,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 
 class MapActivity : AppCompatActivity() {
 
-	private lateinit var mMap: GoogleMap
+	private var mMap: GoogleMap? = null
 	private var mapIsReady: Boolean = false
 
 
@@ -121,14 +121,14 @@ class MapActivity : AppCompatActivity() {
 			return
 
 		// Removes all markers from the map
-		mMap.clear()
+		mMap?.clear()
 
 		val lat = userLocation.latitude
 		val lon = userLocation.longitude
 
 		// Add marker in the user's location, and moves the camera to this location.
 		val userLocationCoordinates = LatLng(lat, lon)
-		mMap.addMarker(MarkerOptions()
+		mMap?.addMarker(MarkerOptions()
 			.position(userLocationCoordinates)
 			.title("This is your location!")
 			.icon(bitmapDescriptorFromVector(this@MapActivity , R.drawable.baseline_circle_24)))
@@ -141,7 +141,7 @@ class MapActivity : AppCompatActivity() {
 
 		val lat = userLocation.latitude
 		val lon = userLocation.longitude
-		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
+		mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
 	}
 
 
