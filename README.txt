@@ -1,2 +1,3 @@
-This is the first commit for the Locator app.
+This is the locator app for android.
+(Currently in progress)
 
