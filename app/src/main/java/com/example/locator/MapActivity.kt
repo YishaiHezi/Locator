@@ -1,108 +1,60 @@
 package com.example.locator
 
 import android.content.Context
-import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.activity.viewModels
+import android.location.Location
 import android.os.Bundle
-import android.os.Looper
-import android.widget.Toast
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsResponse
-import com.google.android.gms.location.SettingsClient
+import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.tasks.Task
 
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapActivity : AppCompatActivity() {
 
 	private lateinit var mMap: GoogleMap
 	private var mapIsReady: Boolean = false
-	private var isResume: Boolean = false
-	private var isFirstTime: Boolean = true
 
-	private lateinit var fusedLocationClient: FusedLocationProviderClient
-	private var locationCallback: LocationCallback = object : LocationCallback() {
-		override fun onLocationResult(locationResult: LocationResult) {
-			super.onLocationResult(locationResult)
 
-			val userLocation = locationResult.locations[0]
-
-			val lat = userLocation?.latitude
-			val lon = userLocation?.longitude
-
-			if (lat != null && lon != null){
-
-				// Removes all markers from the map
-				mMap.clear()
-
-				// Add marker in the user's location, and moves the camera to this location.
-				val userLocationCoords = LatLng(lat, lon)
-				mMap.addMarker(MarkerOptions()
-					.position(userLocationCoords)
-					.title("This is your location!")
-					.icon(bitmapDescriptorFromVector(this@MapActivity , R.drawable.baseline_circle_24)))
-				if (isFirstTime) {
-					mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
-					isFirstTime = false
-				}
-			}
-			else{
-				Toast.makeText(this@MapActivity, "we couldn't find your location!", Toast.LENGTH_SHORT).show()
-			}
-		}
-	}
+	private val viewModel: MapActivityViewModel by viewModels()
 
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-
-		// Check for permission
-		requestPermissionsIfNeeded()
-
-		fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
 		setContentView(R.layout.map_activity)
 
-		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
-		val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-		mapFragment.getMapAsync(this)
+		// Check for permission.
+		requestPermissionsIfNeeded()
 
+		// Initialize the map.
+		initializeMap()
 
+		// Add observers to the view model.
+		addLocationObservers()
 	}
 
 
 	override fun onResume() {
 		super.onResume()
-		isResume = true
-
-		tryTrackingAfterTheUser()
+		startTrackingTheUser()
 	}
 
-
-	override fun onStop() {
-		super.onStop()
-		stopTrackingAfterTheUser()
+	override fun onPause() {
+		super.onPause()
+		stopTrackingTheUser()
 	}
-
 
 	private fun requestPermissionsIfNeeded(){
 		if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -110,6 +62,86 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 			ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 1)
 			return
 		}
+	}
+
+	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+		if (grantResults.any { it == PackageManager.PERMISSION_GRANTED })
+			startTrackingTheUser()
+		else
+			Log.d(TAG, "permission wasn't granted by the user")
+	}
+
+
+	/**
+	 * Manipulates the map once available.
+	 * This callback is triggered when the map is ready to be used.
+	 * This is where we can add markers or lines, add listeners or move the camera. In this case,
+	 * we just add a marker near Sydney, Australia.
+	 * If Google Play services is not installed on the device, the user will be prompted to install
+	 * it inside the SupportMapFragment. This method will only be triggered once the user has
+	 * installed Google Play services and returned to the app.
+	 */
+	private fun initializeMap(){
+		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
+		val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+		mapFragment.getMapAsync{
+			Log.d(TAG, "The map is ready!")
+			mMap = it
+			mapIsReady = true
+			startTrackingTheUser()
+		}
+	}
+
+
+	private fun startTrackingTheUser(){
+		viewModel.startTracking(this)
+	}
+
+	private fun stopTrackingTheUser(){
+		viewModel.stopTracking()
+	}
+
+
+	private fun addLocationObservers(){
+		// Observer for location updates.
+		viewModel.userLocation.observe(this) { userLocation -> updateUi(userLocation) }
+
+		// One time observer for the animation of the camera.
+		viewModel.userLocation.observe(this, object : Observer<Location>{
+			override fun onChanged(value: Location) {
+				animateCamera(value)
+				viewModel.userLocation.removeObserver(this)
+			}
+		})
+	}
+
+	private fun updateUi(userLocation: Location){
+		if (!mapIsReady)
+			return
+
+		// Removes all markers from the map
+		mMap.clear()
+
+		val lat = userLocation.latitude
+		val lon = userLocation.longitude
+
+		// Add marker in the user's location, and moves the camera to this location.
+		val userLocationCoordinates = LatLng(lat, lon)
+		mMap.addMarker(MarkerOptions()
+			.position(userLocationCoordinates)
+			.title("This is your location!")
+			.icon(bitmapDescriptorFromVector(this@MapActivity , R.drawable.baseline_circle_24)))
+	}
+
+
+	private fun animateCamera(userLocation: Location){
+		if(!mapIsReady)
+			return
+
+		val lat = userLocation.latitude
+		val lon = userLocation.longitude
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
 	}
 
 
@@ -123,68 +155,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 		}
 	}
 
-	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-		if (grantResults.any { it == PackageManager.PERMISSION_GRANTED })
-			tryTrackingAfterTheUser()
-	}
 
 
 
-	/**
-	 * Manipulates the map once available.
-	 * This callback is triggered when the map is ready to be used.
-	 * This is where we can add markers or lines, add listeners or move the camera. In this case,
-	 * we just add a marker near Sydney, Australia.
-	 * If Google Play services is not installed on the device, the user will be prompted to install
-	 * it inside the SupportMapFragment. This method will only be triggered once the user has
-	 * installed Google Play services and returned to the app.
-	 */
-	override fun onMapReady(googleMap: GoogleMap) {
-		mMap = googleMap
-		mapIsReady = true
-		tryTrackingAfterTheUser()
-	}
 
-
-
-	private fun tryTrackingAfterTheUser(){
-		if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-			ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-			mapIsReady && isResume)
-			fusedLocationClient.requestLocationUpdates(getLocationRequest(), locationCallback, Looper.getMainLooper())
-	}
-
-	private fun stopTrackingAfterTheUser(){
-		fusedLocationClient.removeLocationUpdates(locationCallback)
-	}
-
-
-	private fun getLocationRequest() : LocationRequest {
-		val locationRequest = createLocationRequest()
-		val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-		val client: SettingsClient = LocationServices.getSettingsClient(this)
-		val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-
-		task.addOnFailureListener { exception ->
-			if (exception is ResolvableApiException){
-				// Location settings are not satisfied, but this can be fixed
-				// by showing the user a dialog.
-				try {
-					// Show the dialog by calling startResolutionForResult(),
-					// and check the result in onActivityResult().
-//					exception.startResolutionForResult(this@MapActivity, )
-				} catch (sendEx: IntentSender.SendIntentException) {
-					// Ignore the error.
-				}
-			}
-		}
-
-		return locationRequest
-	}
-
-	private fun createLocationRequest(): LocationRequest {
-		return LocationRequest.Builder(10000).build()
+	companion object{
+		val TAG: String
+			get() = "MapActivity"
 	}
 
 
