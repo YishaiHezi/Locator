@@ -24,22 +24,38 @@ import com.google.android.gms.tasks.Task
 class MapActivityViewModel(application: Application) : AndroidViewModel(application){
 
 
+	/**
+	 * The mutable location live data.
+	 */
 	private val userLocationMutable: MutableLiveData<Location> = MutableLiveData()
+
+
+	/**
+	 * The immutable location live data.
+	 */
 	val userLocation: LiveData<Location> = userLocationMutable
 
 
+	/**
+	 * This is an object that is part of google api. Used to track the user location.
+	 */
 	private var fusedLocationClient: FusedLocationProviderClient? = null
 
 	private var locationCallback: LocationCallback = object : LocationCallback() {
 		override fun onLocationResult(locationResult: LocationResult) {
 			super.onLocationResult(locationResult)
 
-			userLocationMutable.value = locationResult.locations[0]
+			if (locationResult.locations.isNotEmpty()) {
+				val locations = locationResult.locations
+				userLocationMutable.value = locations[locations.size - 1]
+			}
 		}
 	}
 
 
-
+	/**
+	 * Starts tracking the user's location.
+	 */
 	fun startTracking(activity: Activity){
 		if (fusedLocationClient == null)
 			fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
@@ -48,12 +64,19 @@ class MapActivityViewModel(application: Application) : AndroidViewModel(applicat
 			ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 			fusedLocationClient?.requestLocationUpdates(getLocationRequest(activity), locationCallback, Looper.getMainLooper())
 	}
+
+
+	/**
+	 * Stop tracking the user's location.
+	 */
 	fun stopTracking(){
 		fusedLocationClient?.removeLocationUpdates(locationCallback)
 	}
 
 
-
+	/**
+	 * Builds a location request, which holds all the needed parameters that we need.
+	 */
 	private fun getLocationRequest(activity: Activity) : LocationRequest {
 		val locationRequest = LocationRequest.Builder(10000).build()
 		val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)

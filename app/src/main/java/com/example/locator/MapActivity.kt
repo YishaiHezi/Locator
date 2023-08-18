@@ -56,6 +56,10 @@ class MapActivity : AppCompatActivity() {
 		stopTrackingTheUser()
 	}
 
+
+	/**
+	 * Request the required permissions from the user.
+	 */
 	private fun requestPermissionsIfNeeded(){
 		if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
 			ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -94,15 +98,25 @@ class MapActivity : AppCompatActivity() {
 	}
 
 
+	/**
+	 * Start tracking the user's location.
+	 */
 	private fun startTrackingTheUser(){
 		viewModel.startTracking(this)
 	}
 
+
+	/**
+	 * Stop tracking the user's location.
+	 */
 	private fun stopTrackingTheUser(){
 		viewModel.stopTracking()
 	}
 
 
+	/**
+	 * Add the observers to the view model.
+	 */
 	private fun addLocationObservers(){
 		// Observer for location updates.
 		viewModel.userLocation.observe(this) { userLocation -> updateUi(userLocation) }
@@ -116,9 +130,15 @@ class MapActivity : AppCompatActivity() {
 		})
 	}
 
+
+	/**
+	 * Update the ui with the given new location.
+	 */
 	private fun updateUi(userLocation: Location){
 		if (!mapIsReady)
 			return
+
+		Log.d(TAG, "update the ui with a new location")
 
 		// Removes all markers from the map
 		mMap?.clear()
@@ -135,6 +155,9 @@ class MapActivity : AppCompatActivity() {
 	}
 
 
+	/**
+	 * Animate the camera (changes the zoom from a low zoom to a high).
+	 */
 	private fun animateCamera(userLocation: Location){
 		if(!mapIsReady)
 			return
@@ -154,9 +177,6 @@ class MapActivity : AppCompatActivity() {
 			BitmapDescriptorFactory.fromBitmap(bitmap)
 		}
 	}
-
-
-
 
 
 	companion object{
