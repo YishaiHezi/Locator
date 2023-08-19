@@ -1,14 +1,16 @@
 package com.example.locator
 
+
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import androidx.activity.viewModels
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -38,24 +40,23 @@ class MapActivity : AppCompatActivity() {
 		// Check for permission.
 		requestPermissionsIfNeeded()
 
-		// Initialize the map.
-		initializeMap()
+		// Initialize the ui.
+		initializeUi()
 
 		// Add observers to the view model.
 		addLocationObservers()
 	}
-
 
 	override fun onResume() {
 		super.onResume()
 		startTrackingTheUser()
 	}
 
+
 	override fun onPause() {
 		super.onPause()
 		stopTrackingTheUser()
 	}
-
 
 	/**
 	 * Request the required permissions from the user.
@@ -68,6 +69,7 @@ class MapActivity : AppCompatActivity() {
 		}
 	}
 
+
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 		if (grantResults.any { it == PackageManager.PERMISSION_GRANTED })
@@ -75,6 +77,20 @@ class MapActivity : AppCompatActivity() {
 		else
 			Log.d(TAG, "permission wasn't granted by the user")
 	}
+
+	private fun initializeUi() {
+		// Initialize the toolbar.
+		initializeToolbar()
+
+		// Initialize the map.
+		initializeMap()
+	}
+
+	private fun initializeToolbar() {
+		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
+		setSupportActionBar(myToolbar)
+	}
+
 
 
 	/**
