@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.widget.SearchView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 
 
@@ -27,6 +29,7 @@ class MapActivity : AppCompatActivity() {
 
 	private var mMap: GoogleMap? = null
 	private var mapIsReady: Boolean = false
+	private var currentLocationMarker: Marker? = null
 
 
 	private val viewModel: MapActivityViewModel by viewModels()
@@ -58,10 +61,11 @@ class MapActivity : AppCompatActivity() {
 		stopTrackingTheUser()
 	}
 
+
 	/**
 	 * Request the required permissions from the user.
 	 */
-	private fun requestPermissionsIfNeeded(){
+	private fun requestPermissionsIfNeeded() {
 		if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
 			ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 1)
@@ -78,6 +82,10 @@ class MapActivity : AppCompatActivity() {
 			Log.d(TAG, "permission wasn't granted by the user")
 	}
 
+
+	/**
+	 * Initialize the ui: the tool bar and the map.
+	 */
 	private fun initializeUi() {
 		// Initialize the toolbar.
 		initializeToolbar()
@@ -86,11 +94,35 @@ class MapActivity : AppCompatActivity() {
 		initializeMap()
 	}
 
+
+	/**
+	 * Initialize the tool bar with the search view.
+	 */
 	private fun initializeToolbar() {
 		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
 		setSupportActionBar(myToolbar)
-	}
 
+		val searchView: SearchView = findViewById(R.id.search_view)
+		searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+			override fun onQueryTextSubmit(query: String): Boolean {
+				// Handle query submission
+
+
+				// todo: add the logic that produces the location of the given user (query)
+				val lat = 31.819536
+				val lon = 35.235405
+				addMarkerToMap(lat, lon)
+				animateCamera(lat, lon)
+
+				return true
+			}
+
+			override fun onQueryTextChange(newText: String): Boolean {
+				// Handle query text change
+				return true
+			}
+		})
+	}
 
 
 	/**
@@ -102,10 +134,10 @@ class MapActivity : AppCompatActivity() {
 	 * it inside the SupportMapFragment. This method will only be triggered once the user has
 	 * installed Google Play services and returned to the app.
 	 */
-	private fun initializeMap(){
+	private fun initializeMap() {
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-		mapFragment.getMapAsync{
+		mapFragment.getMapAsync {
 			Log.d(TAG, "The map is ready!")
 			mMap = it
 			mapIsReady = true
@@ -117,7 +149,7 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Start tracking the user's location.
 	 */
-	private fun startTrackingTheUser(){
+	private fun startTrackingTheUser() {
 		viewModel.startTracking(this)
 	}
 
@@ -125,7 +157,7 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Stop tracking the user's location.
 	 */
-	private fun stopTrackingTheUser(){
+	private fun stopTrackingTheUser() {
 		viewModel.stopTracking()
 	}
 
@@ -133,14 +165,14 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Add the observers to the view model.
 	 */
-	private fun addLocationObservers(){
+	private fun addLocationObservers() {
 		// Observer for location updates.
 		viewModel.userLocation.observe(this) { userLocation -> updateUi(userLocation) }
 
 		// One time observer for the animation of the camera.
-		viewModel.userLocation.observe(this, object : Observer<Location>{
+		viewModel.userLocation.observe(this, object : Observer<Location> {
 			override fun onChanged(value: Location) {
-				animateCamera(value)
+				animateCamera(value.latitude, value.longitude)
 				viewModel.userLocation.removeObserver(this)
 			}
 		})
@@ -150,39 +182,42 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Update the ui with the given new location.
 	 */
-	private fun updateUi(userLocation: Location){
+	private fun updateUi(userLocation: Location) {
 		if (!mapIsReady)
 			return
 
 		Log.d(TAG, "update the ui with a new location")
 
-		// Removes all markers from the map
-		mMap?.clear()
+		// Removes the last user location from the map.
+		currentLocationMarker?.remove()
 
-		val lat = userLocation.latitude
-		val lon = userLocation.longitude
+		// Add a new marker for the user location.
+		currentLocationMarker = addMarkerToMap(userLocation.latitude, userLocation.longitude)
+	}
 
-		// Add marker in the user's location, and moves the camera to this location.
+
+	/**
+	 * Add a marker to the map at the specified location.
+	 */
+	private fun addMarkerToMap(lat: Double, lon: Double) : Marker?{
+		// Add marker in the user's location.
 		val userLocationCoordinates = LatLng(lat, lon)
-		mMap?.addMarker(MarkerOptions()
+		return mMap?.addMarker(MarkerOptions()
 			.position(userLocationCoordinates)
-			.title("This is your location!")
-			.icon(bitmapDescriptorFromVector(this@MapActivity , R.drawable.baseline_my_location_24)))
+			.icon(bitmapDescriptorFromVector(this@MapActivity, R.drawable.baseline_my_location_24)))
+
 	}
 
 
 	/**
 	 * Animate the camera (changes the zoom from a low zoom to a high).
 	 */
-	private fun animateCamera(userLocation: Location){
-		if(!mapIsReady)
+	private fun animateCamera(lat: Double, lon: Double) {
+		if (!mapIsReady)
 			return
 
-		val lat = userLocation.latitude
-		val lon = userLocation.longitude
 		mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
 	}
-
 
 
 	private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
@@ -195,12 +230,10 @@ class MapActivity : AppCompatActivity() {
 	}
 
 
-	companion object{
+	companion object {
 		val TAG: String
 			get() = "MapActivity"
 	}
-
-
 
 
 }
