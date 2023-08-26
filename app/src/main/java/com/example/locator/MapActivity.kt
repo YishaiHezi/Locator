@@ -167,7 +167,7 @@ class MapActivity : AppCompatActivity() {
 		mMap?.addMarker(MarkerOptions()
 			.position(userLocationCoordinates)
 			.title("This is your location!")
-			.icon(bitmapDescriptorFromVector(this@MapActivity , R.drawable.baseline_circle_24)))
+			.icon(bitmapDescriptorFromVector(this@MapActivity , R.drawable.baseline_my_location_24)))
 	}
 
 
