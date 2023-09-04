@@ -25,20 +25,20 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 
 
-class MapActivity : AppCompatActivity() {
+class IntroActivity : AppCompatActivity() {
 
 	private var mMap: GoogleMap? = null
 	private var mapIsReady: Boolean = false
 	private var currentLocationMarker: Marker? = null
 
 
-	private val viewModel: MapActivityViewModel by viewModels()
+	private val viewModel: IntroActivityViewModel by viewModels()
 
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		setContentView(R.layout.map_activity)
+		setContentView(R.layout.intro_activity)
 
 		// Check for permission.
 		requestPermissionsIfNeeded()
@@ -103,15 +103,18 @@ class MapActivity : AppCompatActivity() {
 		setSupportActionBar(myToolbar)
 
 		val searchView: SearchView = findViewById(R.id.search_view)
+
+		var marker: Marker? = null
+
 		searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 			override fun onQueryTextSubmit(query: String): Boolean {
-				// Handle query submission
-
+				// Remove old marker, if needed.
+				marker?.remove()
 
 				// todo: add the logic that produces the location of the given user (query)
 				val lat = 31.819536
 				val lon = 35.235405
-				addMarkerToMap(lat, lon)
+				marker = addMarkerToMap(lat, lon)
 				animateCamera(lat, lon)
 
 				return true
@@ -122,6 +125,13 @@ class MapActivity : AppCompatActivity() {
 				return true
 			}
 		})
+
+		searchView.setOnCloseListener {
+			// Remove the last marker that was added.
+			marker?.remove()
+			false
+		}
+
 	}
 
 
@@ -204,7 +214,7 @@ class MapActivity : AppCompatActivity() {
 		val userLocationCoordinates = LatLng(lat, lon)
 		return mMap?.addMarker(MarkerOptions()
 			.position(userLocationCoordinates)
-			.icon(bitmapDescriptorFromVector(this@MapActivity, R.drawable.baseline_my_location_24)))
+			.icon(bitmapDescriptorFromVector(this@IntroActivity, R.drawable.baseline_my_location_24)))
 
 	}
 
