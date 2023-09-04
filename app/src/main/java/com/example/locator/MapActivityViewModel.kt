@@ -1,5 +1,6 @@
 package com.example.locator
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.IntentSender
@@ -56,12 +57,12 @@ class MapActivityViewModel(application: Application) : AndroidViewModel(applicat
 	/**
 	 * Starts tracking the user's location.
 	 */
+	@SuppressLint("MissingPermission")
 	fun startTracking(activity: Activity){
 		if (fusedLocationClient == null)
 			fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
 
-		if (ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-			ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		if (permissionGranted(activity))
 			fusedLocationClient?.requestLocationUpdates(getLocationRequest(activity), locationCallback, Looper.getMainLooper())
 	}
 
@@ -71,6 +72,15 @@ class MapActivityViewModel(application: Application) : AndroidViewModel(applicat
 	 */
 	fun stopTracking(){
 		fusedLocationClient?.removeLocationUpdates(locationCallback)
+	}
+
+
+	/**
+	 * Location permissions were granted by the user.
+	 */
+	private fun permissionGranted(activity: Activity): Boolean{
+		return ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+				ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 	}
 
 
