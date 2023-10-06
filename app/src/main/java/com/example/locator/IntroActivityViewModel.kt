@@ -22,6 +22,10 @@ import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.tasks.Task
 
+
+/**
+ * The view model were all the tracking after the user location occur.
+ */
 class IntroActivityViewModel(application: Application) : AndroidViewModel(application){
 
 
@@ -88,7 +92,11 @@ class IntroActivityViewModel(application: Application) : AndroidViewModel(applic
 	 * Builds a location request, which holds all the needed parameters that we need.
 	 */
 	private fun getLocationRequest(activity: Activity) : LocationRequest {
-		val locationRequest = LocationRequest.Builder(10000).build()
+		val locationRequest = LocationRequest.Builder(10000)
+			.setMinUpdateDistanceMeters(50f)
+			.setMinUpdateIntervalMillis(7000)
+			.build()
+
 		val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
 		val client: SettingsClient = LocationServices.getSettingsClient(activity)
 		val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
