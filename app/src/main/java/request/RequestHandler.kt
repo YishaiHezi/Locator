@@ -15,16 +15,16 @@ object RequestHandler {
 
 
 	/**
-	 * Returns a [ApiService] object that is used to send requests to the server.
+	 * Returns a [ServerConnection] object that is used to send requests to the server.
 	 */
-	fun getApiService() : ApiService {
+	fun getServerConnection() : ServerConnection {
 		val retrofit = Retrofit.Builder()
 			.baseUrl("https://192.168.1.179:8443")
 			.client(getUnsafeOkHttpClient())
 			.addConverterFactory(GsonConverterFactory.create())
 			.build()
 
-		return retrofit.create(ApiService::class.java)
+		return retrofit.create(ServerConnection::class.java)
 	}
 
 

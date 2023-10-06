@@ -9,13 +9,13 @@ import retrofit2.http.Path
 /**
  * Here we define the apis that we need to call from the server.
  */
-interface ApiService {
+interface ServerConnection {
 	@GET("User/{id}")
-	suspend fun getUser(@Path("id") userId: String): User
+	suspend fun getUserLocation(@Path("id") userId: String): User
 
 
 	@POST("User")
-	suspend fun addUser(@Body user: User): User
+	suspend fun updateUserLocation(@Body user: User): User
 
 
 	@GET("Test")
