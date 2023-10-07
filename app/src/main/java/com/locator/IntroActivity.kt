@@ -1,4 +1,4 @@
-package com.example.locator
+package com.locator
 
 
 import android.content.Context
@@ -23,13 +23,23 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.lightme.locator.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import request.RequestHandler.getServerConnection
 
 
+/**
+ * The first screen that will be presented to the user.
+ */
 class IntroActivity : AppCompatActivity() {
 
 	private var mMap: GoogleMap? = null
 	private var mapIsReady: Boolean = false
 	private var currentLocationMarker: Marker? = null
+	private var resultMarker: Marker? = null
 
 
 	private val viewModel: IntroActivityViewModel by viewModels()
@@ -99,24 +109,23 @@ class IntroActivity : AppCompatActivity() {
 	 * Initialize the tool bar with the search view.
 	 */
 	private fun initializeToolbar() {
+		val presenter = object : LocationPresenter {
+			override fun show(lat: Double, lon: Double) {
+				resultMarker = addMarkerToMap(lat, lon)
+				animateCamera(lat, lon)
+			}
+		}
+
 		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
 		setSupportActionBar(myToolbar)
 
 		val searchView: SearchView = findViewById(R.id.search_view)
 
-		var marker: Marker? = null
-
 		searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 			override fun onQueryTextSubmit(query: String): Boolean {
 				// Remove old marker, if needed.
-				marker?.remove()
-
-				// todo: add the logic that produces the location of the given user (query)
-				val lat = 31.819536
-				val lon = 35.235405
-				marker = addMarkerToMap(lat, lon)
-				animateCamera(lat, lon)
-
+				resultMarker?.remove()
+				showUserLocation(query, presenter)
 				return true
 			}
 
@@ -126,9 +135,11 @@ class IntroActivity : AppCompatActivity() {
 			}
 		})
 
+
+
 		searchView.setOnCloseListener {
 			// Remove the last marker that was added.
-			marker?.remove()
+			resultMarker?.remove()
 			false
 		}
 
@@ -153,6 +164,35 @@ class IntroActivity : AppCompatActivity() {
 			mapIsReady = true
 			startTrackingTheUser()
 		}
+	}
+
+
+	/**
+	 * Get the location of the user with the specified id, and show it on the map.
+	 */
+	private fun showUserLocation(id: String, locationPresenter: LocationPresenter){
+		CoroutineScope(Dispatchers.IO).launch {
+			val serverConnection = getServerConnection()
+			try {
+				val result = serverConnection.getUserLocation(id)
+				Log.d("test", "result: $result")
+
+				withContext(Dispatchers.Main){
+					locationPresenter.show(result.lat, result.lon)
+				}
+
+			} catch (e: Exception) {
+				// Handle exceptions, like network errors or JSON parsing errors
+				Log.d("test", "in the exception: $e")
+			}
+		}
+	}
+
+
+	interface LocationPresenter{
+
+		fun show(lat: Double, lon: Double)
+
 	}
 
 
@@ -238,6 +278,9 @@ class IntroActivity : AppCompatActivity() {
 			BitmapDescriptorFactory.fromBitmap(bitmap)
 		}
 	}
+
+
+
 
 
 	companion object {

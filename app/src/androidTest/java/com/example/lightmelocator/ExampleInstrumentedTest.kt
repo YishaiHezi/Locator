@@ -1,4 +1,4 @@
-package com.example.locator
+package com.example.lightmelocator
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

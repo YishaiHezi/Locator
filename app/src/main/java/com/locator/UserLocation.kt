@@ -1,4 +1,4 @@
-package com.example.locator
+package com.locator
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

@@ -1,4 +1,4 @@
-package com.example.locator
+package com.example.lightmelocator
 
 import org.junit.Test
 

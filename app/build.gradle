@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.locator'
+    namespace 'com.lightme.locator'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.locator"
+        applicationId "com.lightme.locator"
         minSdk 24
         targetSdk 33
         versionCode 1
