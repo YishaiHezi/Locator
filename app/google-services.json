@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "657934947856",
+    "project_id": "locator-6561",
+    "storage_bucket": "locator-6561.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657934947856:android:71c25e86e992dd0d359c95",
+        "android_client_info": {
+          "package_name": "com.lightme.locator"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmMDIgR1Dm7YLLkuxhSiVaQnuxepB_QBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

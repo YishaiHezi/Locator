@@ -23,6 +23,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.messaging.FirebaseMessaging
 import com.lightme.locator.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +59,9 @@ class IntroActivity : AppCompatActivity() {
 
 		// Add observers to the view model.
 		addLocationObservers()
+
+
+		printToken()
 	}
 
 	override fun onResume() {
@@ -69,6 +73,28 @@ class IntroActivity : AppCompatActivity() {
 	override fun onPause() {
 		super.onPause()
 		stopTrackingTheUser()
+	}
+
+
+	// TODO: this is a test, needs to be deleted
+
+	private fun printToken(){
+		FirebaseMessaging.getInstance().token
+			.addOnCompleteListener { task ->
+				if (!task.isSuccessful) {
+					Log.w("test_token", "getInstanceId failed", task.exception)
+					return@addOnCompleteListener
+				}
+
+				// Get the token
+				val token: String = task.result
+
+				// Log the token
+				Log.d("test_token", token)
+			}
+			.addOnFailureListener {
+				Log.w("test_token", "in failure listener")
+			}
 	}
 
 
