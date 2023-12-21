@@ -201,7 +201,7 @@ class IntroActivity : AppCompatActivity() {
 			val serverConnection = getServerConnection()
 			try {
 				val result = serverConnection.getUserLocation(id)
-				Log.d("test", "result: $result")
+				Log.d("test_server", "result: $result")
 
 				withContext(Dispatchers.Main){
 					locationPresenter.show(result.lat, result.lon)
@@ -209,7 +209,7 @@ class IntroActivity : AppCompatActivity() {
 
 			} catch (e: Exception) {
 				// Handle exceptions, like network errors or JSON parsing errors
-				Log.d("test", "in the exception: $e")
+				Log.d("test_server", "exception: $e")
 			}
 		}
 	}
