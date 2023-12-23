@@ -73,6 +73,10 @@
 		</activity>
 
 
+		<provider
+			android:authorities="com.locator.SuggestionsContentProvider"
+			android:name="com.locator.SuggestionsContentProvider"
+			android:exported="false"/>
 
 
 	</application>

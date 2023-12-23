@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Location
 import android.os.Bundle
+import android.provider.SearchRecentSuggestions
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -36,6 +37,11 @@ import request.RequestHandler.getServerConnection
  * The screen that do a search for the location of a given user (in the intent, the search query),
  * and presents its location along with the location of the current user.
  */
+
+
+// todo: need to add: "clear history button from the recent suggestions. it is explained in: https://developer.android.com/develop/ui/views/search/adding-recent-query-suggestions
+//  at the end of the page."
+
 class MapActivity : AppCompatActivity() {
 
 	private var mMap: GoogleMap? = null
@@ -61,9 +67,11 @@ class MapActivity : AppCompatActivity() {
 		// Read the search query from the intent.
 		val query = readIntent()
 
-		// perform search and presents the results.
-		if (!query.isNullOrEmpty())
+		// Save the query and perform search, then presents the results.
+		if (!query.isNullOrEmpty()) {
+			saveToRecentSuggestions(query)
 			performSearch(query)
+		}
 
 		// Add observers to the view model.
 		addLocationObservers()
@@ -90,6 +98,17 @@ class MapActivity : AppCompatActivity() {
 
 		return query
 	}
+
+
+	/**
+	 * Save the query to the recent suggestions storage so the user will
+	 * see it next time it searches.
+	 */
+	private fun saveToRecentSuggestions(query: String){
+		SearchRecentSuggestions(this, SuggestionsContentProvider.AUTHORITY, SuggestionsContentProvider.MODE)
+			.saveRecentQuery(query, null)
+	}
+
 
 	override fun onResume() {
 		super.onResume()
