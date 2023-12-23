@@ -67,9 +67,8 @@ class MapActivity : AppCompatActivity() {
 		// Read the search query from the intent.
 		val query = readIntent()
 
-		// Save the query and perform search, then presents the results.
+		// perform search, and presents the results.
 		if (!query.isNullOrEmpty()) {
-			saveToRecentSuggestions(query)
 			performSearch(query)
 		}
 
@@ -199,6 +198,9 @@ class MapActivity : AppCompatActivity() {
 			try {
 				val result = serverConnection.getUserLocation(query)
 				Log.d("test_server", "result: $result")
+
+				// Save the query to the recent suggestions.
+				saveToRecentSuggestions(query)
 
 				withContext(Dispatchers.Main){
 					showLocationOnMap(result.lat, result.lon)
