@@ -24,9 +24,9 @@ import com.google.android.gms.tasks.Task
 
 
 /**
- * The view model were all the tracking after the user location occur.
+ * The view model were all the tracking after the user location happen.
  */
-class IntroActivityViewModel(application: Application) : AndroidViewModel(application){
+class MapActivityViewModel(application: Application) : AndroidViewModel(application){
 
 
 	/**

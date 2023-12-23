@@ -1,17 +1,17 @@
 package com.locator
 
 
+import android.app.SearchManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import android.widget.SearchView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -33,9 +33,10 @@ import request.RequestHandler.getServerConnection
 
 
 /**
- * The first screen that will be presented to the user.
+ * The screen that do a search for the location of a given user (in the intent, the search query),
+ * and presents its location along with the location of the current user.
  */
-class IntroActivity : AppCompatActivity() {
+class MapActivity : AppCompatActivity() {
 
 	private var mMap: GoogleMap? = null
 	private var mapIsReady: Boolean = false
@@ -43,25 +44,51 @@ class IntroActivity : AppCompatActivity() {
 	private var resultMarker: Marker? = null
 
 
-	private val viewModel: IntroActivityViewModel by viewModels()
+	private val viewModel: MapActivityViewModel by viewModels()
 
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		setContentView(R.layout.intro_activity)
+		setContentView(R.layout.map_activity)
 
 		// Check for permission.
 		requestPermissionsIfNeeded()
 
-		// Initialize the ui.
-		initializeUi()
+		// Initialize the map.
+		initializeMap()
+
+		// Read the search query from the intent.
+		val query = readIntent()
+
+		// perform search and presents the results.
+		if (!query.isNullOrEmpty())
+			performSearch(query)
 
 		// Add observers to the view model.
 		addLocationObservers()
 
 
 		printToken()
+	}
+
+
+
+	/**
+	 * Reads the intent that started this activity,
+	 * and returns the search query from this intent.
+	 */
+	private fun readIntent(): String? {
+		val intent = intent
+
+		// Verify the action and get the query.
+		val query: String? = if (Intent.ACTION_SEARCH == intent.action) {
+			intent.getStringExtra(SearchManager.QUERY)
+		} else {
+			intent.getStringExtra("query")
+		}
+
+		return query
 	}
 
 	override fun onResume() {
@@ -73,6 +100,27 @@ class IntroActivity : AppCompatActivity() {
 	override fun onPause() {
 		super.onPause()
 		stopTrackingTheUser()
+	}
+
+
+	/**
+	 * Manipulates the map once available.
+	 * This callback is triggered when the map is ready to be used.
+	 * This is where we can add markers or lines, add listeners or move the camera. In this case,
+	 * we just add a marker near Sydney, Australia.
+	 * If Google Play services is not installed on the device, the user will be prompted to install
+	 * it inside the SupportMapFragment. This method will only be triggered once the user has
+	 * installed Google Play services and returned to the app.
+	 */
+	private fun initializeMap() {
+		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
+		val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+		mapFragment.getMapAsync {
+			Log.d(TAG, "The map is ready!")
+			mMap = it
+			mapIsReady = true
+			startTrackingTheUser()
+		}
 	}
 
 
@@ -120,91 +168,21 @@ class IntroActivity : AppCompatActivity() {
 
 
 	/**
-	 * Initialize the ui: the tool bar and the map.
+	 * Perform a location search for the given query (which is a user id),
+	 * and show the result on the map.
 	 */
-	private fun initializeUi() {
-		// Initialize the toolbar.
-		initializeToolbar()
+	private fun performSearch(query: String){
+		// Remove old marker, if needed.
+		resultMarker?.remove()
 
-		// Initialize the map.
-		initializeMap()
-	}
-
-
-	/**
-	 * Initialize the tool bar with the search view.
-	 */
-	private fun initializeToolbar() {
-		val presenter = object : LocationPresenter {
-			override fun show(lat: Double, lon: Double) {
-				resultMarker = addMarkerToMap(lat, lon)
-				animateCamera(lat, lon)
-			}
-		}
-
-		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
-		setSupportActionBar(myToolbar)
-
-		val searchView: SearchView = findViewById(R.id.search_view)
-
-		searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-			override fun onQueryTextSubmit(query: String): Boolean {
-				// Remove old marker, if needed.
-				resultMarker?.remove()
-				showUserLocation(query, presenter)
-				return true
-			}
-
-			override fun onQueryTextChange(newText: String): Boolean {
-				// Handle query text change
-				return true
-			}
-		})
-
-
-
-		searchView.setOnCloseListener {
-			// Remove the last marker that was added.
-			resultMarker?.remove()
-			false
-		}
-
-	}
-
-
-	/**
-	 * Manipulates the map once available.
-	 * This callback is triggered when the map is ready to be used.
-	 * This is where we can add markers or lines, add listeners or move the camera. In this case,
-	 * we just add a marker near Sydney, Australia.
-	 * If Google Play services is not installed on the device, the user will be prompted to install
-	 * it inside the SupportMapFragment. This method will only be triggered once the user has
-	 * installed Google Play services and returned to the app.
-	 */
-	private fun initializeMap() {
-		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
-		val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-		mapFragment.getMapAsync {
-			Log.d(TAG, "The map is ready!")
-			mMap = it
-			mapIsReady = true
-			startTrackingTheUser()
-		}
-	}
-
-
-	/**
-	 * Get the location of the user with the specified id, and show it on the map.
-	 */
-	private fun showUserLocation(id: String, locationPresenter: LocationPresenter){
 		CoroutineScope(Dispatchers.IO).launch {
 			val serverConnection = getServerConnection()
 			try {
-				val result = serverConnection.getUserLocation(id)
+				val result = serverConnection.getUserLocation(query)
 				Log.d("test_server", "result: $result")
 
 				withContext(Dispatchers.Main){
-					locationPresenter.show(result.lat, result.lon)
+					showLocationOnMap(result.lat, result.lon)
 				}
 
 			} catch (e: Exception) {
@@ -215,10 +193,12 @@ class IntroActivity : AppCompatActivity() {
 	}
 
 
-	interface LocationPresenter{
-
-		fun show(lat: Double, lon: Double)
-
+	/**
+	 * Show a marker on the map in the given lat & lon.
+	 */
+	private fun showLocationOnMap(lat: Double, lon: Double){
+		resultMarker = addMarkerToMap(lat, lon)
+		animateCamera(lat, lon)
 	}
 
 
@@ -280,7 +260,7 @@ class IntroActivity : AppCompatActivity() {
 		val userLocationCoordinates = LatLng(lat, lon)
 		return mMap?.addMarker(MarkerOptions()
 			.position(userLocationCoordinates)
-			.icon(bitmapDescriptorFromVector(this@IntroActivity, R.drawable.baseline_my_location_24)))
+			.icon(bitmapDescriptorFromVector(this@MapActivity, R.drawable.baseline_my_location_24)))
 
 	}
 
@@ -312,6 +292,13 @@ class IntroActivity : AppCompatActivity() {
 	companion object {
 		val TAG: String
 			get() = "MapActivity"
+
+
+		fun createStartIntent(context: Context, searchQuery: String){
+			val intent = Intent(context, MapActivity::class.java)
+			intent.putExtra("query", searchQuery)
+		}
+
 	}
 
 
