@@ -209,6 +209,10 @@ class MapActivity : AppCompatActivity() {
 			} catch (e: Exception) {
 				// Handle exceptions, like network errors or JSON parsing errors
 				Log.d("test_server", "exception: $e")
+
+				withContext(Dispatchers.Main){
+					ErrorDialog.show(supportFragmentManager)
+				}
 			}
 		}
 	}
