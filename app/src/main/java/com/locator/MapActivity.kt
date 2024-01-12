@@ -222,7 +222,7 @@ class MapActivity : AppCompatActivity() {
 	 * Show a marker on the map in the given lat & lon.
 	 */
 	private fun showLocationOnMap(lat: Double, lon: Double){
-		resultMarker = addMarkerToMap(lat, lon)
+		resultMarker = addMarkerToMap(lat, lon, R.drawable.friend_location)
 		animateCamera(lat, lon)
 	}
 
@@ -273,19 +273,19 @@ class MapActivity : AppCompatActivity() {
 		currentLocationMarker?.remove()
 
 		// Add a new marker for the user location.
-		currentLocationMarker = addMarkerToMap(userLocation.latitude, userLocation.longitude)
+		currentLocationMarker = addMarkerToMap(userLocation.latitude, userLocation.longitude, R.drawable.my_location)
 	}
 
 
 	/**
 	 * Add a marker to the map at the specified location.
 	 */
-	private fun addMarkerToMap(lat: Double, lon: Double) : Marker?{
+	private fun addMarkerToMap(lat: Double, lon: Double, iconDrawable: Int) : Marker?{
 		// Add marker in the user's location.
 		val userLocationCoordinates = LatLng(lat, lon)
 		return mMap?.addMarker(MarkerOptions()
 			.position(userLocationCoordinates)
-			.icon(bitmapDescriptorFromVector(this@MapActivity, R.drawable.baseline_my_location_24)))
+			.icon(bitmapDescriptorFromVector(this@MapActivity, iconDrawable)))
 
 	}
 
