@@ -166,6 +166,8 @@ class MapActivity : AppCompatActivity() {
 	}
 
 
+	// todo: make sure this is running in SuggestionsActivity
+
 	/**
 	 * Request the required permissions from the user.
 	 */
