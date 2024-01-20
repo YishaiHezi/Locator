@@ -1,5 +1,7 @@
 package request
 
+import android.location.Location
+import com.locator.UserLocation
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -15,7 +17,11 @@ interface ServerConnection {
 
 
 	@POST("AddUser")
-	suspend fun updateUserLocation(@Body user: User): User
+	suspend fun addUser(@Body user: User): User
+
+
+	@POST("UpdateUserLocation/{id}")
+	suspend fun updateUserLocation(@Path("id") userId: String, @Body location: UserLocation): User
 
 
 	@GET("Test")

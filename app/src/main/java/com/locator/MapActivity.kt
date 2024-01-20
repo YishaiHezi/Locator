@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.provider.SearchRecentSuggestions
 import android.util.Log
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -170,7 +172,15 @@ class MapActivity : AppCompatActivity() {
 	private fun requestPermissionsIfNeeded() {
 		if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
 			ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 1)
+
+			var array = arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				array += android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
+			}
+
+			ActivityCompat.requestPermissions(this, array, 1)
+
 			return
 		}
 	}
@@ -192,6 +202,11 @@ class MapActivity : AppCompatActivity() {
 	private fun performSearch(query: String){
 		// Remove old marker, if needed.
 		resultMarker?.remove()
+
+		// todo: change to
+//		lifecycleScope.launch(Dispatchers.IO) {
+//
+//		}
 
 		CoroutineScope(Dispatchers.IO).launch {
 			val serverConnection = getServerConnection()
