@@ -4,9 +4,11 @@ import android.app.SearchManager
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import com.google.firebase.messaging.FirebaseMessaging
 import com.lightme.locator.R
 
 /**
@@ -38,5 +40,32 @@ class SuggestionsActivity : AppCompatActivity(){
 		}
 
 
+		// todo: delete this:
+		printToken()
+
+
 	}
+
+
+	// TODO: this is a test, needs to be deleted
+
+	private fun printToken(){
+		FirebaseMessaging.getInstance().token
+			.addOnCompleteListener { task ->
+				if (!task.isSuccessful) {
+					Log.w("test_token", "getInstanceId failed", task.exception)
+					return@addOnCompleteListener
+				}
+
+				// Get the token
+				val token: String = task.result
+
+				// Log the token
+				Log.d("test_token", token)
+			}
+			.addOnFailureListener {
+				Log.w("test_token", "in failure listener")
+			}
+	}
+
 }

@@ -1,6 +1,5 @@
 package request
 
-import android.location.Location
 import com.locator.UserLocation
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -13,11 +12,15 @@ import retrofit2.http.Path
  */
 interface ServerConnection {
 	@GET("GetUser/{id}")
-	suspend fun getUserLocation(@Path("id") userId: String): User
+	suspend fun getUser(@Path("id") userId: String): User
+
+
+	@GET("GetUserLocation/{id}")
+	suspend fun getUserLocation(@Path("id") userId: String): UserLocation
 
 
 	@POST("AddUser")
-	suspend fun addUser(@Body user: User): User
+	suspend fun addUser(@Body user: User)
 
 
 	@POST("UpdateUserLocation/{id}")
@@ -34,7 +37,8 @@ data class User(
 	val id: String,
 	val name: String,
 	val lat: Double,
-	val lon: Double
+	val lon: Double,
+	val fcmToken: String
 )
 
 data class Message(
