@@ -15,7 +15,7 @@
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"
 		android:supportsRtl="true"
-		android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+		android:theme="@style/Theme.Locator"
 		tools:targetApi="31">
 
 
@@ -64,6 +64,20 @@
 			android:name="com.locator.SuggestionsActivity"
 			android:screenOrientation="portrait"
 			tools:ignore="LockedOrientationActivity"
+			android:exported="true">
+
+<!--			<intent-filter>-->
+<!--				<action android:name="android.intent.action.MAIN"/>-->
+
+<!--				<category android:name="android.intent.category.LAUNCHER"/>-->
+<!--			</intent-filter>-->
+		</activity>
+
+
+		<activity
+			android:name="com.locator.LoginActivity"
+			android:screenOrientation="portrait"
+			android:windowSoftInputMode="adjustResize"
 			android:exported="true">
 
 			<intent-filter>
