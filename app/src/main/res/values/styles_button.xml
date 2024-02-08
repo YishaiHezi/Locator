@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+	<style name="Base.Widget.Locator.Button" parent="Widget.MaterialComponents.Button">
+		<item name="android:minHeight">56dp</item>
+	</style>
+
+
+	<style name="Widget.Locator.Button" parent="Base.Widget.Locator.Button">
+		<item name="android:stateListAnimator">@null</item>
+		<item name="elevation">0dp</item>
+	</style>
+
+	<style name="Widget.Locator.Button.Borderless" parent="Widget.Locator.Button">
+		<item name="android:backgroundTint">?attr/colorSurface</item>
+		<item name="android:textColor">?attr/colorPrimary</item>
+	</style>
+
+
+</resources>
