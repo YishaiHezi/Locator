@@ -3,6 +3,7 @@ package com.locator
 import android.app.SearchManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -16,7 +17,7 @@ import com.lightme.locator.R
  *
  * @author Yishai Hezi
  */
-class SuggestionsActivity : AppCompatActivity(){
+class SuggestionsActivity : AppCompatActivity() {
 
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,7 +28,6 @@ class SuggestionsActivity : AppCompatActivity(){
 
 		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
 		setSupportActionBar(myToolbar)
-
 
 
 		// Get the SearchView and set the searchable configuration.
@@ -49,7 +49,7 @@ class SuggestionsActivity : AppCompatActivity(){
 
 	// TODO: this is a test, needs to be deleted
 
-	private fun printToken(){
+	private fun printToken() {
 		FirebaseMessaging.getInstance().token
 			.addOnCompleteListener { task ->
 				if (!task.isSuccessful) {
@@ -66,6 +66,21 @@ class SuggestionsActivity : AppCompatActivity(){
 			.addOnFailureListener {
 				Log.w("test_token", "in failure listener")
 			}
+	}
+
+
+	companion object {
+
+
+		/**
+		 * Creates a starting intent for this activity.
+		 */
+		fun createStartIntent(context: Context): Intent {
+
+			return Intent(context, SuggestionsActivity::class.java)
+
+		}
+
 	}
 
 }
