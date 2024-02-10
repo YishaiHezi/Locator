@@ -5,6 +5,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 /**
@@ -26,6 +27,9 @@ interface ServerConnection {
 	@POST("UpdateUserLocation/{id}")
 	suspend fun updateUserLocation(@Path("id") userId: String, @Body location: UserLocation): User
 
+	@POST("UpdateFirebaseToken/{id}")
+	suspend fun updateFirebaseToken(@Path("id") userId: String, @Query("firebaseToken") firebaseToken: String)
+
 
 	@GET("Test")
 	suspend fun test(): Message
@@ -38,7 +42,7 @@ data class User(
 	val name: String,
 	val lat: Double,
 	val lon: Double,
-	val fcmToken: String
+	val fcmToken: String?
 )
 
 data class Message(

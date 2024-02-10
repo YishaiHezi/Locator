@@ -139,7 +139,7 @@ class MapActivity : AppCompatActivity() {
 	}
 
 
-	// todo: make sure this is running in SuggestionsActivity
+	// todo: make sure this is running in SuggestionsActivity, and take it from the LocationManager
 
 	/**
 	 * Request the required permissions from the user.
