@@ -22,7 +22,7 @@ import request.User
 
 
 /**
- *
+ * The login screen.
  *
  * @author Yishai Hezi
  */
@@ -180,11 +180,7 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 		finish()
 	}
 
-
-	// todo: inside "auth.currentUser" there is "getIdToken". this method returns a unique token for the client, so
-	// todo: I should use this in the server to uniquely identify the user on the server (there is 1 more step to do in the server).
-
-	// todo: Need to run the firebase emulator in order to test login flows: https://firebase.google.com/docs/auth/android/start
+	// todo: I can run the firebase emulator in order to test login flows: https://firebase.google.com/docs/auth/android/start
 
 	// todo: I have a user: yishaihazi@gmail.com, password: 123456
 	// todo: I have a user: yishaihazianother@gmail.com, password: 12345678
