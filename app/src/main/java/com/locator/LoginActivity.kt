@@ -6,10 +6,18 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.lightme.locator.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import manager.LocalMemoryManager
+import manager.LocationManager
+import request.RequestHandler
+import request.User
 
 
 /**
@@ -87,7 +95,10 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 					Log.d(TAG, "createUserWithEmail:success")
 					Toast.makeText(baseContext, "Authentication succeeded!", Toast.LENGTH_SHORT).show()
 
+					saveUserId(auth.currentUser)
+					sendUserToServer()
 					updateUi()
+
 				} else {
 					// If sign in fails, display a message to the user.
 					Log.w(TAG, "createUserWithEmail:failure", task.exception)
@@ -109,6 +120,8 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 					Log.d(TAG, "signInWithEmail:success")
 					Toast.makeText(baseContext, "Signing in succeeded!", Toast.LENGTH_SHORT).show()
 
+					saveUserId(auth.currentUser)
+					sendUserToServer()
 					updateUi()
 				} else {
 					// If sign in fails, display a message to the user.
@@ -116,6 +129,35 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 					Toast.makeText(baseContext, "Signing in failed..", Toast.LENGTH_SHORT).show()
 				}
 			}
+	}
+
+
+	/**
+	 * Save the user firebase uid in the local memory.
+	 */
+	private fun saveUserId(firebaseUser: FirebaseUser?){
+		if (firebaseUser == null) return
+
+		LocalMemoryManager.saveUID(this,firebaseUser.uid)
+	}
+
+
+	/**
+	 * Sends the user's details to the server.
+	 */
+	private fun sendUserToServer(){
+		lifecycleScope.launch(Dispatchers.IO) {
+			val uid = LocalMemoryManager.getUID(this@LoginActivity) ?: return@launch
+			val name = "random name" // todo: fix this!
+			val location = LocationManager.getUserLocationSuspended(this@LoginActivity)
+			val lat: Double = location?.lat ?: 0.0
+			val lon = location?.lon ?: 0.0
+			val firebaseToken = LocalMemoryManager.getFirebaseToken(this@LoginActivity)
+			val user = User(uid, name, lat, lon, firebaseToken)
+
+			val serverConnection = RequestHandler.getServerConnection()
+			serverConnection.addUser(user)
+		}
 	}
 
 
