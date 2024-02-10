@@ -14,6 +14,7 @@ import com.google.firebase.ktx.Firebase
 import com.lightme.locator.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import manager.LocalMemoryManager
 import manager.LocationManager
 import request.RequestHandler
@@ -51,7 +52,7 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 	public override fun onStart() {
 		super.onStart()
 
-		updateUi()
+		tryToOpenHomeScreen()
 	}
 
 
@@ -96,8 +97,11 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 					Toast.makeText(baseContext, "Authentication succeeded!", Toast.LENGTH_SHORT).show()
 
 					saveUserId(auth.currentUser)
-					sendUserToServer()
-					updateUi()
+
+					lifecycleScope.launch {
+						sendUserToServer()
+						tryToOpenHomeScreen()
+					}
 
 				} else {
 					// If sign in fails, display a message to the user.
@@ -121,8 +125,12 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 					Toast.makeText(baseContext, "Signing in succeeded!", Toast.LENGTH_SHORT).show()
 
 					saveUserId(auth.currentUser)
-					sendUserToServer()
-					updateUi()
+
+					lifecycleScope.launch {
+						sendUserToServer()
+						tryToOpenHomeScreen()
+					}
+
 				} else {
 					// If sign in fails, display a message to the user.
 					Log.w(TAG, "signInWithEmail:failure", task.exception)
@@ -145,9 +153,9 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 	/**
 	 * Sends the user's details to the server.
 	 */
-	private fun sendUserToServer(){
-		lifecycleScope.launch(Dispatchers.IO) {
-			val uid = LocalMemoryManager.getUID(this@LoginActivity) ?: return@launch
+	private suspend fun sendUserToServer(){
+		withContext(Dispatchers.IO) {
+			val uid = LocalMemoryManager.getUID(this@LoginActivity) ?: return@withContext
 			val name = "random name" // todo: fix this!
 			val location = LocationManager.getUserLocationSuspended(this@LoginActivity)
 			val lat: Double = location?.lat ?: 0.0
@@ -164,15 +172,12 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 	/**
 	 * Opens the [SuggestionsActivity] if the user is logged in.
 	 */
-	private fun updateUi() {
-		val currentUser = auth.currentUser
+	private fun tryToOpenHomeScreen() {
+		// if currentUser != null -> the user is signed in. If not, we will not open the home screen.
+		auth.currentUser ?: return
 
-		// Check if user is signed in (non-null) and update UI accordingly.
-		if (currentUser != null) {
-			startActivity(SuggestionsActivity.createStartIntent(this))
-			finish()
-		}
-
+		startActivity(SuggestionsActivity.createStartIntent(this))
+		finish()
 	}
 
 
