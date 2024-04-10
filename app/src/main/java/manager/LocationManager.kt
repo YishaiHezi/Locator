@@ -30,7 +30,7 @@ object LocationManager {
 	/**
 	 * Request the required permissions from the user.
 	 */
-	private fun requestPermissionsIfNeeded(activity: Activity) {
+	fun requestPermissionsIfNeeded(activity: Activity) {
 		if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
 			ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
