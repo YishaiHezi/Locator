@@ -61,7 +61,7 @@
 
 
 		<activity
-			android:name="com.locator.SuggestionsActivity"
+			android:name="com.locator.HomeActivity"
 			android:screenOrientation="portrait"
 			tools:ignore="LockedOrientationActivity"
 			android:exported="true">

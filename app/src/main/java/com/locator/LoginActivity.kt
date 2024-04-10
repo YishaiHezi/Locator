@@ -170,13 +170,13 @@ class LoginActivity : AppCompatActivity(R.layout.login_activity) {
 
 
 	/**
-	 * Opens the [SuggestionsActivity] if the user is logged in.
+	 * Opens the [HomeActivity] if the user is logged in.
 	 */
 	private fun tryToOpenHomeScreen() {
 		// if currentUser != null -> the user is signed in. If not, we will not open the home screen.
 		auth.currentUser ?: return
 
-		startActivity(SuggestionsActivity.createStartIntent(this))
+		startActivity(HomeActivity.createStartIntent(this))
 		finish()
 	}
 

@@ -17,14 +17,13 @@ import com.lightme.locator.R
  *
  * @author Yishai Hezi
  */
-class SuggestionsActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity() {
 
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
 		setContentView(R.layout.suggestions_activity)
-
 
 		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
 		setSupportActionBar(myToolbar)
@@ -77,7 +76,7 @@ class SuggestionsActivity : AppCompatActivity() {
 		 */
 		fun createStartIntent(context: Context): Intent {
 
-			return Intent(context, SuggestionsActivity::class.java)
+			return Intent(context, HomeActivity::class.java)
 
 		}
 
