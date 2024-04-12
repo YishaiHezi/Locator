@@ -9,8 +9,8 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import com.google.firebase.messaging.FirebaseMessaging
 import com.lightme.locator.R
+import manager.LocalMemoryManager
 
 /**
  * In this activity the user can search for the locations of other users.
@@ -38,37 +38,30 @@ class HomeActivity : AppCompatActivity() {
 			setSearchableInfo(searchManager.getSearchableInfo(ComponentName(context, MapActivity::class.java)))
 		}
 
-
-		// todo: delete this:
-		printToken()
-
-
+		logData()
 	}
 
 
-	// TODO: this is a test, needs to be deleted
+	/**
+	 * Log the fcm token and the user id for debugging purposes.
+	 */
+	private fun logData(){
+		val fcmToken = LocalMemoryManager.getFirebaseToken(this)
+		val uid = LocalMemoryManager.getUID(this)
 
-	private fun printToken() {
-		FirebaseMessaging.getInstance().token
-			.addOnCompleteListener { task ->
-				if (!task.isSuccessful) {
-					Log.w("test_token", "getInstanceId failed", task.exception)
-					return@addOnCompleteListener
-				}
+		Log.d(TAG, "fcmToken: $fcmToken")
+		Log.d(TAG, "uid: $uid")
 
-				// Get the token
-				val token: String = task.result
-
-				// Log the token
-				Log.d("test_token", token)
-			}
-			.addOnFailureListener {
-				Log.w("test_token", "in failure listener")
-			}
 	}
 
 
 	companion object {
+
+
+		/**
+		 * The TAG for logging.
+		 */
+		private const val TAG = "HomeActivity"
 
 
 		/**
