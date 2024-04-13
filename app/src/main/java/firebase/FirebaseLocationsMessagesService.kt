@@ -103,10 +103,15 @@ class FirebaseLocationsMessagesService : FirebaseMessagingService() {
 	 */
 	private fun updateUserLocation(){
 		getUserLocation(this)?.addOnSuccessListener {
-			if (it == null) return@addOnSuccessListener
+			if (it == null) {
+				Log.d(TAG, "The location is null..")
+				return@addOnSuccessListener
+			}
 
-			Log.d(TAG, "Got a new location of the user: ${it.latitude}, ${it.longitude}")
+			Log.d(TAG, "Sending a new location of the user to the server: (${it.latitude}, ${it.longitude})")
 			sendLocationToServer(it)
+		}?.addOnFailureListener {
+			Log.d(TAG, "Failed to figure out the location of the user! the exception: ${it.message}")
 		}
 	}
 
