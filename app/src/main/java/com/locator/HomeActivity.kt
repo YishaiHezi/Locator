@@ -17,19 +17,32 @@ import manager.LocalMemoryManager
  *
  * @author Yishai Hezi
  */
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity(R.layout.suggestions_activity) {
 
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		setContentView(R.layout.suggestions_activity)
+		setToolbar()
+		setSearchableConfiguration()
+		logData()
+	}
 
+
+	/**
+	 * Set the toolbar.
+	 */
+	private fun setToolbar(){
 		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
 		setSupportActionBar(myToolbar)
+	}
 
 
-		// Get the SearchView and set the searchable configuration.
+	/**
+	 * Get the SearchView and set the searchable configuration.
+	 */
+	private fun setSearchableConfiguration(){
+
 		val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
 		val searchView: SearchView = findViewById(R.id.search_view)
 
@@ -37,8 +50,6 @@ class HomeActivity : AppCompatActivity() {
 			isSubmitButtonEnabled = true
 			setSearchableInfo(searchManager.getSearchableInfo(ComponentName(context, MapActivity::class.java)))
 		}
-
-		logData()
 	}
 
 
