@@ -3,8 +3,14 @@
 	<string name="title_activity_maps">Locator</string>
 	<string name="error_dialog_title">Something went wrong</string>
 	<string name="error_dialog_message">Please check your internet connection and try again</string>
+
+	<!-- login screen: -->
 	<string name="email_hint">Email</string>
 	<string name="password_hint">Password</string>
 	<string name="sign_in_button">Sign in</string>
 	<string name="sign_out_button">Sign up</string>
+
+	<!-- home screen:-->
+	<string name="header_title">Search…</string>
+
 </resources>

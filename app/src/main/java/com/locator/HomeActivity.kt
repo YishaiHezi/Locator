@@ -35,10 +35,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity) {
 		val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
 		val searchView: SearchView = findViewById(R.id.search_view)
 
-		searchView.apply {
-			isSubmitButtonEnabled = true
-			setSearchableInfo(searchManager.getSearchableInfo(ComponentName(context, MapActivity::class.java)))
-		}
+		searchView.setSearchableInfo(searchManager.getSearchableInfo(ComponentName(this, MapActivity::class.java)))
 	}
 
 

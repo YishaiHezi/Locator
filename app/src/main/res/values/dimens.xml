@@ -3,5 +3,6 @@
 
 	<dimen name="screen_edge">16dp</dimen>
 	<dimen name="half_screen_edge">8dp</dimen>
+	<dimen name="twice_screen_edge">32dp</dimen>
 
 </resources>
