@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import com.lightme.locator.R
 import manager.LocalMemoryManager
 
@@ -17,24 +16,14 @@ import manager.LocalMemoryManager
  *
  * @author Yishai Hezi
  */
-class HomeActivity : AppCompatActivity(R.layout.suggestions_activity) {
+class HomeActivity : AppCompatActivity(R.layout.home_activity) {
 
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		setToolbar()
 		setSearchableConfiguration()
 		logData()
-	}
-
-
-	/**
-	 * Set the toolbar.
-	 */
-	private fun setToolbar(){
-		val myToolbar: Toolbar = findViewById(R.id.my_toolbar)
-		setSupportActionBar(myToolbar)
 	}
 
 

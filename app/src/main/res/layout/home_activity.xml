@@ -5,12 +5,10 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-	<androidx.appcompat.widget.Toolbar
-		android:id="@+id/my_toolbar"
+	<FrameLayout
 		android:layout_width="match_parent"
-		android:layout_height="?attr/actionBarSize"
+		android:layout_height="wrap_content"
 		android:background="?attr/colorPrimary"
-		android:elevation="4dp"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toTopOf="parent">
@@ -19,8 +17,15 @@
 			android:id="@+id/search_view"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:queryHint="Type an id.."/>
+			android:layout_marginHorizontal="@dimen/screen_edge"
+			android:layout_marginTop="150dp"
+			android:layout_marginBottom="25dp"
+			android:background="?attr/colorOnPrimary"
+			android:queryHint="Type an id.."
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"/>
 
-	</androidx.appcompat.widget.Toolbar>
+	</FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
