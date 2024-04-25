@@ -1,6 +1,6 @@
 package request
 
-import com.locator.UserLocation
+import data.UserLocation
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

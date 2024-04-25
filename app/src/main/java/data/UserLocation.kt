@@ -1,4 +1,4 @@
-package com.locator
+package data
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
