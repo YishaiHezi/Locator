@@ -1,6 +1,10 @@
 package manager
 
 import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import data.User
+
 
 /**
  * Used to save things to local memory.
@@ -12,9 +16,27 @@ object LocalMemoryManager {
 
 
 	/**
+	 * Gson object to convert elements to strings in order to save them.
+	 */
+	private val gson: Gson = Gson()
+
+
+	/**
 	 * The shared preferences file name for things related to user identification.
 	 */
-	private const val PREF_NAME = "user_identification"
+	private const val IDENTIFICATION_PREF_NAME = "user_identification"
+
+
+	/**
+	 * The shared preferences file name for things related to recent searches.
+	 */
+	private const val RECENT_SEARCHES_PREF_NAME = "recent_searches_pref"
+
+
+	/**
+	 * The key for saving recent searches in the shared preferences.
+	 */
+	private const val KEY_RECENT_SEARCHES = "recent_searches"
 
 
 	/**
@@ -32,8 +54,8 @@ object LocalMemoryManager {
 	/**
 	 * Save the given value in the given key.
 	 */
-	private fun save(context: Context, key: String, value: String?) {
-		val pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+	private fun save(context: Context, prefName: String, key: String, value: String?) {
+		val pref = context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
 		val editor = pref.edit()
 
 		editor.putString(key, value)
@@ -44,8 +66,8 @@ object LocalMemoryManager {
 	/**
 	 * Get the given value in the given key.
 	 */
-	private fun get(context: Context, key: String): String? {
-		val pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+	private fun get(context: Context, prefName: String, key: String): String? {
+		val pref = context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
 
 		return pref.getString(key, null)
 	}
@@ -54,8 +76,8 @@ object LocalMemoryManager {
 	/**
 	 * Clears the given value from the given key.
 	 */
-	fun clear(context: Context, key: String) {
-		val pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+	fun clear(context: Context, prefName: String, key: String) {
+		val pref = context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
 		val editor = pref.edit()
 
 		editor.remove(key)
@@ -64,10 +86,50 @@ object LocalMemoryManager {
 
 
 	/**
+	 * Get a list of users (recent searches).
+	 */
+	fun getUsers(context: Context): List<User> {
+		val userListJson: String? = get(context, RECENT_SEARCHES_PREF_NAME, KEY_RECENT_SEARCHES)
+
+		val users = if (userListJson != null) {
+			val typeToken = object : TypeToken<List<User>>() {}
+			gson.fromJson(userListJson, typeToken)
+		} else {
+			emptyList()
+		}
+
+		return users
+	}
+
+
+	/**
+	 * Saves a list of users (recent searches).
+	 */
+	fun saveUsers(context: Context, users: List<User>) {
+		val type = object : TypeToken<List<User>>() {}.type
+		val usersListJson: String = gson.toJson(users, type)
+
+		save(context, RECENT_SEARCHES_PREF_NAME, KEY_RECENT_SEARCHES, usersListJson)
+	}
+
+
+	// todo: delete
+//	fun saveUser(context: Context, user: User) {
+//		val users: MutableList<User> = getUsers(context).toMutableList()
+//
+//		users.add(user)
+//		val type = object : TypeToken<List<User>>() {}.type
+//		val usersListJson: String = gson.toJson(users, type)
+//
+//		save(context, RECENT_SEARCHES_PREF_NAME, KEY_RECENT_SEARCHES, usersListJson)
+//	}
+
+
+	/**
 	 * Get the saved UID.
 	 */
 	fun getUID(context: Context): String?{
-		return get(context, KEY_UID)
+		return get(context, IDENTIFICATION_PREF_NAME, KEY_UID)
 	}
 
 
@@ -75,7 +137,7 @@ object LocalMemoryManager {
 	 * Save the given UID.
 	 */
 	fun saveUID(context: Context, uid: String?){
-		save(context, KEY_UID, uid)
+		save(context, IDENTIFICATION_PREF_NAME, KEY_UID, uid)
 	}
 
 
@@ -83,14 +145,14 @@ object LocalMemoryManager {
 	 * Get the saved firebase token.
 	 */
 	fun getFirebaseToken(context: Context): String?{
-		return get(context, KEY_FIREBASE_TOKEN)
+		return get(context, IDENTIFICATION_PREF_NAME, KEY_FIREBASE_TOKEN)
 	}
 
 	/**
 	 * Save the given firebase token.
 	 */
 	fun saveFirebaseToken(context: Context, token: String){
-		save(context, KEY_FIREBASE_TOKEN, token)
+		save(context, IDENTIFICATION_PREF_NAME, KEY_FIREBASE_TOKEN, token)
 	}
 
 
