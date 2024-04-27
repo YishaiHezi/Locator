@@ -9,7 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -92,10 +92,10 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 
 		override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
 			val user: User = userList[position]
-			val textView: TextView = holder.itemView.findViewById(R.id.user)
+			val button: Button = holder.itemView.findViewById(R.id.user)
 
-			textView.text = user.name
-			textView.setOnClickListener { userClickedListener.onUserClicked(user) }
+			button.text = user.name
+			button.setOnClickListener { userClickedListener.onUserClicked(user) }
 		}
 
 
