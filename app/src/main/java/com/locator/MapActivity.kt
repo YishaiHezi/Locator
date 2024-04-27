@@ -244,9 +244,11 @@ class MapActivity : AppCompatActivity() {
 			get() = "MapActivity"
 
 
-		fun createStartIntent(context: Context, searchQuery: String) {
+		fun createStartIntent(context: Context, searchQuery: String): Intent {
 			val intent = Intent(context, MapActivity::class.java)
 			intent.putExtra("query", searchQuery)
+
+			return intent
 		}
 
 	}
