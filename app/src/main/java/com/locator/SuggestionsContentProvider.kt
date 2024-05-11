@@ -8,6 +8,10 @@ import android.content.SearchRecentSuggestionsProvider
  *
  * @author Yishai Hezi
  */
+
+
+// todo: need to delete this
+
 class SuggestionsContentProvider : SearchRecentSuggestionsProvider() {
 
 	init {
