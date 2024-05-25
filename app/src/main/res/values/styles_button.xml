@@ -17,5 +17,9 @@
 		<item name="android:textColor">?attr/colorPrimary</item>
 	</style>
 
+	<style name="Widget.Locator.Button.Regular" parent="Widget.Locator.Button">
+		<item name="android:textColor">?attr/colorSurface</item>
+	</style>
+
 
 </resources>

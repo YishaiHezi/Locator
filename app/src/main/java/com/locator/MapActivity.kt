@@ -31,11 +31,6 @@ import manager.LocationManager
 import request.RequestHandler.getServerConnection
 
 
-
-// todo: need to add: "clear history button from the recent suggestions.
-//  it is explained in: https://developer.android.com/develop/ui/views/search/adding-recent-query-suggestions
-//  at the end of the page."
-
 /**
  * The screen that shows a map with the results of the search of another user.
  */

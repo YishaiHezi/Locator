@@ -13,5 +13,7 @@
 	<!-- home screen:-->
 	<string name="header_title">Search…</string>
 	<string name="delete_item_accessibility">Delete this item from history</string>
+	<string name="delete_item">Delete this item from history?</string>
+	<string name="delete">Delete</string>
 
 </resources>
