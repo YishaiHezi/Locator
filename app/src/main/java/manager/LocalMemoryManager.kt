@@ -3,7 +3,7 @@ package manager
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import data.User
+import data.UserDetails
 
 
 /**
@@ -88,11 +88,11 @@ object LocalMemoryManager {
 	/**
 	 * Get a list of users (recent searches).
 	 */
-	fun getUsers(context: Context): List<User> {
+	fun getUsers(context: Context): List<UserDetails> {
 		val userListJson: String? = get(context, RECENT_SEARCHES_PREF_NAME, KEY_RECENT_SEARCHES)
 
 		val users = if (userListJson != null) {
-			val typeToken = object : TypeToken<List<User>>() {}
+			val typeToken = object : TypeToken<List<UserDetails>>() {}
 			gson.fromJson(userListJson, typeToken)
 		} else {
 			emptyList()
@@ -105,9 +105,9 @@ object LocalMemoryManager {
 	/**
 	 * Saves a list of users (recent searches).
 	 */
-	fun saveUsers(context: Context, users: List<User>) {
-		val type = object : TypeToken<List<User>>() {}.type
-		val usersListJson: String = gson.toJson(users, type)
+	fun saveUsers(context: Context, userDetails: List<UserDetails>) {
+		val type = object : TypeToken<List<UserDetails>>() {}.type
+		val usersListJson: String = gson.toJson(userDetails, type)
 
 		save(context, RECENT_SEARCHES_PREF_NAME, KEY_RECENT_SEARCHES, usersListJson)
 	}

@@ -1,7 +1,7 @@
 package manager
 
 import android.content.Context
-import data.User
+import data.UserDetails
 
 /**
  * Holds the logic for the saving of recent searches.
@@ -20,7 +20,7 @@ object RecentSearchesManager {
 	/**
 	 * Get a list of the recent searches.
 	 */
-	fun getRecentSearches(context: Context): List<User>{
+	fun getRecentSearches(context: Context): List<UserDetails>{
 		return LocalMemoryManager.getUsers(context)
 	}
 
@@ -28,14 +28,14 @@ object RecentSearchesManager {
 	/**
 	 * Save the given user to the recent searches.
 	 */
-	fun saveToRecentSearch(context: Context, user: User){
+	fun saveToRecentSearch(context: Context, userDetails: UserDetails){
 		val recentSearches = LocalMemoryManager.getUsers(context).toMutableList()
 
-		if (user in recentSearches) {
-			recentSearches.remove(user)
+		if (userDetails in recentSearches) {
+			recentSearches.remove(userDetails)
 		}
 
-		recentSearches.add(0, user)
+		recentSearches.add(0, userDetails)
 
 		if (recentSearches.size > MAX_SIZE_OF_RECENT_SEARCHES) {
 			recentSearches.removeAt(MAX_SIZE_OF_RECENT_SEARCHES)

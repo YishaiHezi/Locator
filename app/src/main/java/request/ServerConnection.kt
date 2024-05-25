@@ -16,6 +16,10 @@ interface ServerConnection {
 	suspend fun getUser(@Path("id") userId: String): User
 
 
+	@GET("GetUsersByPrefix/{prefix}")
+	suspend fun getUsersByPrefix(@Path("prefix") prefix: String): List<User>
+
+
 	@GET("GetUserLocation/{id}")
 	suspend fun getUserLocation(@Path("id") userId: String): UserLocation
 

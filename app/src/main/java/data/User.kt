@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 /**
  * Represents a user.
  */
-data class User(val name: String, val id: String)
+data class UserDetails(val name: String, val id: String)
 
 
 /**
