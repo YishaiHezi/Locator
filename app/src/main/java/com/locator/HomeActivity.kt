@@ -1,7 +1,5 @@
 package com.locator
 
-import android.app.SearchManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -10,14 +8,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lightme.locator.R
-import data.User
+import data.UserDetails
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import manager.LocalMemoryManager
 import manager.RecentSearchesManager
+import request.RequestHandler
+import uitls.LocatorBottomSheetDialog
 
 
 /**
@@ -28,29 +36,136 @@ import manager.RecentSearchesManager
 class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedListener {
 
 
+	/**
+	 * The search job. Should be canceled when another search started.
+	 */
+	private var searchJob: Job? = null
+
+
+	/**
+	 * The recycler view.
+	 */
+	private var recyclerView: RecyclerView? = null
+
+
+	/**
+	 * The adapter for showing the search results.
+	 */
+	private var adapter: UserAdapter? = null
+
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
-		recyclerView.setLayoutManager(LinearLayoutManager(this))
+		adapter = initAdapter()
 
-		val userList: List<User> = RecentSearchesManager.getRecentSearches(this)
-		val adapter = UserAdapter(userList, this)
-		recyclerView.setAdapter(adapter)
+		recyclerView = findViewById(R.id.recycler_view)
+		initRecyclerView()
 
+		val searchView: SearchView = findViewById(R.id.search_view)
+		initSearchView(searchView)
 
-		// todo: need to delete this. this is the old implementation of recent searches.
-//		setSearchableConfiguration(searchView)
 		logData()
 	}
 
 
 	/**
-	 * Get the SearchView and set the searchable configuration.
+	 * Initialize the recyclerView.
 	 */
-	private fun setSearchableConfiguration(searchView: SearchView) {
-		val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-		searchView.setSearchableInfo(searchManager.getSearchableInfo(ComponentName(this, MapActivity::class.java)))
+	private fun initRecyclerView(){
+		recyclerView?.setLayoutManager(LinearLayoutManager(this))
+		recyclerView?.setAdapter(adapter)
+	}
+
+
+	/**
+	 * Initialize the adapter.
+	 */
+	private fun initAdapter(): UserAdapter{
+		val userList: List<UserDetails> = RecentSearchesManager.getRecentSearches(this)
+		return UserAdapter(userList, this, supportFragmentManager)
+	}
+
+
+	/**
+	 * Initialize the SearchView.
+	 */
+	private fun initSearchView(searchView: SearchView){
+		val listener = object : SearchView.OnQueryTextListener {
+			override fun onQueryTextSubmit(query: String): Boolean {
+				// Perform here the final search when the user clicks on the search button, if needed.
+				return false
+			}
+
+			override fun onQueryTextChange(newText: String): Boolean {
+				searchJob?.cancel()
+
+				// Perform the live search as the user types
+				if (newText.length >= 2) { // This is to prevent too many requests, adjust the number as needed
+					performSearch(newText)
+				}
+				else {
+					showRecentUsersSearches()
+				}
+
+				return true
+			}
+		}
+
+		searchView.setOnQueryTextListener(listener)
+	}
+
+
+	/**
+	 * Perform the search.
+	 */
+	private fun performSearch(text: String){
+		searchJob = lifecycleScope.launch {
+			delay(1000)
+			val usersResult = findUsers(text)
+
+			usersResult.fold(
+				{ usersDetails -> showResults(usersDetails)},
+				{ showResults(emptyList()) }
+			)
+		}
+	}
+
+
+	/**
+	 * Find the users by prefix. Call the server.
+	 */
+	private suspend fun findUsers(text: String): Result<List<UserDetails>>{
+		return withContext(Dispatchers.IO){
+			runCatching {
+				val serverConnection = RequestHandler.getServerConnection()
+				val users = serverConnection.getUsersByPrefix(text)
+
+				users.map { user -> UserDetails(user.name, user.id) }
+			}
+		}
+	}
+
+
+	/**
+	 * Show the results.
+	 */
+	private fun showResults(users: List<UserDetails>){
+		if (users.isNotEmpty()) {
+			adapter?.updateUsersList(users)
+		}
+		else {
+			showRecentUsersSearches()
+		}
+	}
+
+
+	/**
+	 * Show the recent users searches.
+	 */
+	private fun showRecentUsersSearches(){
+		val recentUsersList: List<UserDetails> = RecentSearchesManager.getRecentSearches(this)
+		adapter?.updateUsersList(recentUsersList)
 	}
 
 
@@ -68,39 +183,81 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 
 
 	/**
-	 * Implementation for click on a user.
+	 * Implementation for click on a user result.
 	 */
-	override fun onUserClicked(user: User) {
+	override fun onUserClicked(user: UserDetails) {
 		RecentSearchesManager.saveToRecentSearch(this, user)
 		startActivity(MapActivity.createStartIntent(this, user.id))
 	}
 
 
 	/**
-	 * The adapter
+	 * The adapter for showing the search results.
 	 */
-	class UserAdapter(private val userList: List<User>, private val userClickedListener: OnUserClickedListener) :
-		RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
+	class UserAdapter(private var userList: List<UserDetails>,
+	                  private val userClickedListener: OnUserClickedListener,
+	                  private val fragmentManager: FragmentManager) :
+		RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
-		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
+		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
 			val view: View = LayoutInflater.from(parent.context).inflate(R.layout.user_item, parent, false)
 
 			return UserViewHolder(view)
 		}
 
 
-		override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-			val user: User = userList[position]
-			val button: Button = holder.itemView.findViewById(R.id.user)
+		override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+			val user: UserDetails = userList[position]
 
+			val button: Button = holder.itemView.findViewById(R.id.user)
 			button.text = user.name
 			button.setOnClickListener { userClickedListener.onUserClicked(user) }
+
+			val deleteButton: ImageButton = holder.itemView.findViewById(R.id.delete)
+			deleteButton.setOnClickListener { showDeleteConfirmation(it, user) }
 		}
 
 
 		override fun getItemCount(): Int {
 			return userList.size
+		}
+
+
+		/**
+		 * Update the users list.
+		 */
+		fun updateUsersList(newUserDetails: List<UserDetails>){
+			userList = newUserDetails
+			notifyDataSetChanged()
+		}
+
+
+		/**
+		 * Show the delete confirmation dialog.
+		 */
+		private fun showDeleteConfirmation(view: View, user: UserDetails){
+			val headerText = view.context.getString(R.string.delete_item)
+			val buttonText = view.context.getString(R.string.delete)
+			val action = createDeleteAction(view, user)
+
+			val bottomSheetDialog = LocatorBottomSheetDialog.newInstance(headerText, buttonText, action)
+			bottomSheetDialog.show(fragmentManager, "bottomSheetDialog")
+		}
+
+
+		/**
+		 * Create the delete action.
+		 */
+		private fun createDeleteAction(view: View, user: UserDetails): LocatorBottomSheetDialog.Action {
+			return object : LocatorBottomSheetDialog.Action(){
+				override fun execute() {
+					val users = LocalMemoryManager.getUsers(view.context)
+					val filteredUsers = users.filter { currentUser -> currentUser.id !=  user.id }
+					LocalMemoryManager.saveUsers(view.context, filteredUsers)
+					updateUsersList(filteredUsers)
+				}
+			}
 		}
 
 
@@ -126,9 +283,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 		 * Creates a starting intent for this activity.
 		 */
 		fun createStartIntent(context: Context): Intent {
-
 			return Intent(context, HomeActivity::class.java)
-
 		}
 
 	}
@@ -137,9 +292,9 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 
 
 /**
- * Interface that suppose to be called when a user is clicked.
+ * Interface that suppose to be called when a search result (user) is clicked.
  */
 interface OnUserClickedListener {
-	fun onUserClicked(user: User)
+	fun onUserClicked(user: UserDetails)
 }
 
