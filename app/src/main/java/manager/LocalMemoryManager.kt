@@ -113,18 +113,6 @@ object LocalMemoryManager {
 	}
 
 
-	// todo: delete
-//	fun saveUser(context: Context, user: User) {
-//		val users: MutableList<User> = getUsers(context).toMutableList()
-//
-//		users.add(user)
-//		val type = object : TypeToken<List<User>>() {}.type
-//		val usersListJson: String = gson.toJson(users, type)
-//
-//		save(context, RECENT_SEARCHES_PREF_NAME, KEY_RECENT_SEARCHES, usersListJson)
-//	}
-
-
 	/**
 	 * Get the saved UID.
 	 */
