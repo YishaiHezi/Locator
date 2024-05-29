@@ -10,9 +10,11 @@ import android.graphics.Canvas
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -37,8 +39,8 @@ import request.RequestHandler.getServerConnection
 class MapActivity : AppCompatActivity() {
 
 	private var currentLocationMarker: Marker? = null
-	private var resultMarker: Marker? = null
 
+	private var resultMarker: Marker? = null
 
 	private val viewModel: MapActivityViewModel by viewModels()
 
@@ -162,6 +164,9 @@ class MapActivity : AppCompatActivity() {
 	 * Show a marker on the map in the given lat & lon.
 	 */
 	private fun showLocationOnMap(location: UserLocation, map: GoogleMap) {
+		hideLoader()
+		showMap()
+
 		val lat = location.lat
 		val lon = location.lon
 
@@ -176,6 +181,24 @@ class MapActivity : AppCompatActivity() {
 	private fun showError(e: Throwable){
 		Log.e(TAG, "Got exception: $e")
 		ErrorDialog.show(supportFragmentManager)
+	}
+
+
+	/**
+	 * Show the map.
+	 */
+	private fun showMap(){
+		val mapFragment: FragmentContainerView = findViewById(R.id.map)
+		mapFragment.visibility = FragmentContainerView.VISIBLE
+	}
+
+
+	/**
+	 * Hide the loader.
+	 */
+	private fun hideLoader(){
+		val loader: ProgressBar = findViewById(R.id.loader)
+		loader.visibility = ProgressBar.INVISIBLE
 	}
 
 
