@@ -9,7 +9,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Location
 import android.os.Bundle
-import android.provider.SearchRecentSuggestions
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +23,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.lightme.locator.R
+import data.UserLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,6 +56,18 @@ class MapActivity : AppCompatActivity() {
 	}
 
 
+	override fun onResume() {
+		super.onResume()
+		startTrackingTheUser()
+	}
+
+
+	override fun onPause() {
+		super.onPause()
+		stopTrackingTheUser()
+	}
+
+
 	/**
 	 * Reads the intent that started this activity,
 	 * and returns the search query from this intent.
@@ -71,28 +83,6 @@ class MapActivity : AppCompatActivity() {
 		}
 
 		return query
-	}
-
-
-	/**
-	 * Save the query to the recent suggestions storage so the user will
-	 * see it next time it searches.
-	 */
-	private fun saveToRecentSuggestions(query: String) {
-		SearchRecentSuggestions(this, SuggestionsContentProvider.AUTHORITY, SuggestionsContentProvider.MODE)
-			.saveRecentQuery(query, null)
-	}
-
-
-	override fun onResume() {
-		super.onResume()
-		startTrackingTheUser()
-	}
-
-
-	override fun onPause() {
-		super.onPause()
-		stopTrackingTheUser()
 	}
 
 
@@ -145,27 +135,25 @@ class MapActivity : AppCompatActivity() {
 		resultMarker?.remove()
 
 		lifecycleScope.launch {
-
-
-			val result = withContext(Dispatchers.IO){
-				runCatching {
-					val serverConnection = getServerConnection()
-					serverConnection.getUserLocation(query)
-				}
-			}
+			val result = getLocationFromServer(query)
 
 			result.fold(
+				{ location -> showLocationOnMap(location, map) },
+				{ e -> showError(e) }
+			)
+		}
+	}
 
-				{ location ->
-				saveToRecentSuggestions(query)
-				if (location != null)
-					showLocationOnMap(location.lat, location.lon, map)
-				},
 
-				{ e ->
-				Log.e(TAG, "Got exception: $e")
-				ErrorDialog.show(supportFragmentManager)
-				})
+	/**
+	 * Call the server to get the user location.
+	 */
+	private suspend fun getLocationFromServer(query: String): Result<UserLocation>{
+		return withContext(Dispatchers.IO){
+			runCatching {
+				val serverConnection = getServerConnection()
+				serverConnection.getUserLocation(query)
+			}
 		}
 	}
 
@@ -173,9 +161,21 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Show a marker on the map in the given lat & lon.
 	 */
-	private fun showLocationOnMap(lat: Double, lon: Double, map: GoogleMap) {
+	private fun showLocationOnMap(location: UserLocation, map: GoogleMap) {
+		val lat = location.lat
+		val lon = location.lon
+
 		resultMarker = addMarkerToMap(lat, lon, R.drawable.friend_location, map)
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
+	}
+
+
+	/**
+	 * Show an error dialog.
+	 */
+	private fun showError(e: Throwable){
+		Log.e(TAG, "Got exception: $e")
+		ErrorDialog.show(supportFragmentManager)
 	}
 
 
