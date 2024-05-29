@@ -122,7 +122,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	private fun performSearch(text: String){
 		searchJob = lifecycleScope.launch {
 			delay(1000)
-			val usersResult = findUsers(text)
+			val usersResult = findUsersByText(text)
 
 			usersResult.fold(
 				{ usersDetails -> showResults(usersDetails)},
@@ -135,7 +135,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Find the users by prefix. Call the server.
 	 */
-	private suspend fun findUsers(text: String): Result<List<UserDetails>>{
+	private suspend fun findUsersByText(text: String): Result<List<UserDetails>>{
 		return withContext(Dispatchers.IO){
 			runCatching {
 				val serverConnection = RequestHandler.getServerConnection()
@@ -188,6 +188,8 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	override fun onUserClicked(user: UserDetails) {
 		RecentSearchesManager.saveToRecentSearch(this, user)
 		startActivity(MapActivity.createStartIntent(this, user.id))
+
+		Log.d(TAG, "Clicked on user: $user")
 	}
 
 
