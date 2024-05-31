@@ -221,6 +221,7 @@ class MapActivity : AppCompatActivity() {
 	 */
 	private fun showError(e: Throwable){
 		Log.e(TAG, "Got exception: $e")
+		supportFragmentManager.setFragmentResultListener("dialog_dismissed", this) { _, _ -> finish() }
 		ErrorDialog.show(supportFragmentManager)
 	}
 
