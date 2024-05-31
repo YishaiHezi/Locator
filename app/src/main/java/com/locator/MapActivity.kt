@@ -1,6 +1,9 @@
 package com.locator
 
 
+import android.Manifest
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
@@ -8,11 +11,13 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
@@ -38,6 +43,7 @@ import request.RequestHandler.getServerConnection
  */
 class MapActivity : AppCompatActivity() {
 
+	// todo: maybe delete?
 	private var currentLocationMarker: Marker? = null
 
 	private var resultMarker: Marker? = null
@@ -140,7 +146,7 @@ class MapActivity : AppCompatActivity() {
 			val result = getLocationFromServer(query)
 
 			result.fold(
-				{ location -> showLocationOnMap(location, map) },
+				{ location -> showOtherUserOnMap(location, map) },
 				{ e -> showError(e) }
 			)
 		}
@@ -161,16 +167,51 @@ class MapActivity : AppCompatActivity() {
 
 
 	/**
+	 * Update the ui with the given new location.
+	 */
+	private fun updateSelfLocationOnMap(userLocation: Location, map: GoogleMap) {
+		Log.d(TAG, "update the ui with a new location")
+
+
+		// todo: This is the old marker that shows the current user location. maybe delete?
+
+		// Removes the last user location from the map.
+//		currentLocationMarker?.remove()
+
+		// Add a new marker for the user location.
+//		currentLocationMarker = addMarkerToMap(userLocation.latitude, userLocation.longitude, R.drawable.my_location, map)
+
+
+		if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+			ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+			var array = arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION)
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				array += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+			}
+
+			ActivityCompat.requestPermissions(this, array, 1)
+
+			return
+		}
+
+		map.isMyLocationEnabled = true // This is the blue dot on the map.
+	}
+
+
+
+	/**
 	 * Show a marker on the map in the given lat & lon.
 	 */
-	private fun showLocationOnMap(location: UserLocation, map: GoogleMap) {
+	private fun showOtherUserOnMap(location: UserLocation, map: GoogleMap) {
 		hideLoader()
 		showMap()
 
 		val lat = location.lat
 		val lon = location.lon
 
-		resultMarker = addMarkerToMap(lat, lon, R.drawable.friend_location, map)
+		resultMarker = addMarkerToMap(lat, lon, map)
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
 	}
 
@@ -219,31 +260,16 @@ class MapActivity : AppCompatActivity() {
 
 
 	/**
-	 * Update the ui with the given new location.
-	 */
-	private fun updateSelfLocationOnMap(userLocation: Location, map: GoogleMap) {
-		Log.d(TAG, "update the ui with a new location")
-
-		// Removes the last user location from the map.
-		currentLocationMarker?.remove()
-
-		// Add a new marker for the user location.
-		currentLocationMarker = addMarkerToMap(userLocation.latitude, userLocation.longitude, R.drawable.my_location, map)
-	}
-
-
-	/**
 	 * Add a marker to the map at the specified location.
 	 */
-	private fun addMarkerToMap(lat: Double, lon: Double, iconDrawable: Int, map: GoogleMap): Marker? {
+	private fun addMarkerToMap(lat: Double, lon: Double, map: GoogleMap): Marker? {
 		// Add marker in the user's location.
 		val userLocationCoordinates = LatLng(lat, lon)
 		return map.addMarker(
 			MarkerOptions()
 				.position(userLocationCoordinates)
-				.icon(bitmapDescriptorFromVector(this@MapActivity, iconDrawable))
+				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
 		)
-
 	}
 
 

@@ -1,6 +1,9 @@
 package manager
 
 import android.Manifest
+import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -31,13 +34,13 @@ object LocationManager {
 	 * Request the required permissions from the user.
 	 */
 	fun requestPermissionsIfNeeded(activity: Activity) {
-		if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-			ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+		if (ActivityCompat.checkSelfPermission(activity, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+			ActivityCompat.checkSelfPermission(activity, ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-			var array = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+			var array = arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION)
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				array += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+				array += ACCESS_BACKGROUND_LOCATION
 			}
 
 			ActivityCompat.requestPermissions(activity, array, 1)
