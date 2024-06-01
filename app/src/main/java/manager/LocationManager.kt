@@ -1,6 +1,5 @@
 package manager
 
-import android.Manifest
 import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -55,9 +54,9 @@ object LocationManager {
 	 */
 	fun getUserLocation(context: Context): Task<Location>? {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-			ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED
-			|| ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-			|| ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.checkSelfPermission(context, ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED
+			|| ActivityCompat.checkSelfPermission(context, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+			|| ActivityCompat.checkSelfPermission(context, ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
 			Log.e(TAG, "Can't get the user's location! the user needs to approve the location permissions")
 
