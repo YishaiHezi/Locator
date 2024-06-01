@@ -1,5 +1,6 @@
 package request
 
+import data.LastSeen
 import data.UserLocation
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -21,7 +22,7 @@ interface ServerConnection {
 
 
 	@GET("GetUserLocation/{id}")
-	suspend fun getUserLocation(@Path("id") userId: String): UserLocation
+	suspend fun getUserLocation(@Path("id") userId: String): LastSeen
 
 
 	@POST("AddUser")

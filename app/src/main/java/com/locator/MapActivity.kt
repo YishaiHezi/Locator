@@ -8,8 +8,6 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -18,24 +16,24 @@ import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.lightme.locator.R
-import data.UserLocation
+import data.LastSeen
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import manager.LocationManager
 import request.RequestHandler.getServerConnection
+import utils.TimeUtils
 
 
 /**
@@ -46,7 +44,7 @@ class MapActivity : AppCompatActivity() {
 	// todo: maybe delete?
 	private var currentLocationMarker: Marker? = null
 
-	private var resultMarker: Marker? = null
+	private var otherUserMarker: Marker? = null
 
 	private val viewModel: MapActivityViewModel by viewModels()
 
@@ -140,13 +138,13 @@ class MapActivity : AppCompatActivity() {
 	 */
 	private fun performSearch(query: String, map: GoogleMap) {
 		// Remove old marker, if needed.
-		resultMarker?.remove()
+		otherUserMarker?.remove()
 
 		lifecycleScope.launch {
 			val result = getLocationFromServer(query)
 
 			result.fold(
-				{ location -> showOtherUserOnMap(location, map) },
+				{ lastSeen -> showOtherUserOnMap(lastSeen, map) },
 				{ e -> showError(e) }
 			)
 		}
@@ -156,7 +154,7 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Call the server to get the user location.
 	 */
-	private suspend fun getLocationFromServer(query: String): Result<UserLocation>{
+	private suspend fun getLocationFromServer(query: String): Result<LastSeen>{
 		return withContext(Dispatchers.IO){
 			runCatching {
 				val serverConnection = getServerConnection()
@@ -204,15 +202,18 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Show a marker on the map in the given lat & lon.
 	 */
-	private fun showOtherUserOnMap(location: UserLocation, map: GoogleMap) {
+	private fun showOtherUserOnMap(lastSeen: LastSeen, map: GoogleMap) {
 		hideLoader()
 		showMap()
 
-		val lat = location.lat
-		val lon = location.lon
+		val lat = lastSeen.lat
+		val lon = lastSeen.lon
 
-		resultMarker = addMarkerToMap(lat, lon, map)
-		map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 11.5f))
+		otherUserMarker = addOtherUserToMap(lastSeen, map)
+		showInfoAboveMarker(otherUserMarker)
+
+		// Do camera animation zoom.
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 15f))
 	}
 
 
@@ -263,23 +264,27 @@ class MapActivity : AppCompatActivity() {
 	/**
 	 * Add a marker to the map at the specified location.
 	 */
-	private fun addMarkerToMap(lat: Double, lon: Double, map: GoogleMap): Marker? {
+	private fun addOtherUserToMap(lastSeen: LastSeen, map: GoogleMap): Marker? {
 		// Add marker in the user's location.
-		val userLocationCoordinates = LatLng(lat, lon)
-		return map.addMarker(
-			MarkerOptions()
-				.position(userLocationCoordinates)
-				.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+		val userLocationCoordinates = LatLng(lastSeen.lat, lastSeen.lon)
+		val time = TimeUtils.convertToDate(lastSeen.timestamp)
+
+		return map.addMarker(MarkerOptions()
+			.position(userLocationCoordinates)
+			.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+			.title(lastSeen.name)
+			.snippet("Last seen: $time")
 		)
 	}
 
 
-	private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
-		return ContextCompat.getDrawable(context, vectorResId)?.run {
-			setBounds(0, 0, intrinsicWidth, intrinsicHeight)
-			val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
-			draw(Canvas(bitmap))
-			BitmapDescriptorFactory.fromBitmap(bitmap)
+	/**
+	 * Show the info window of the marker.
+	 */
+	private fun showInfoAboveMarker(marker: Marker?){
+		lifecycleScope.launch {
+			delay(1000)
+			marker?.showInfoWindow()
 		}
 	}
 
