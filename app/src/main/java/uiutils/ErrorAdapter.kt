@@ -1,4 +1,4 @@
-package uitls
+package uiutils
 
 import android.view.LayoutInflater
 import android.view.View

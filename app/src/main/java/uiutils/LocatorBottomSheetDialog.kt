@@ -1,4 +1,4 @@
-package uitls
+package uiutils
 
 import android.os.Bundle
 import android.os.Parcelable

@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
 import manager.LocalMemoryManager
 import manager.RecentSearchesManager
 import request.RequestHandler
-import uitls.LocatorBottomSheetDialog
+import uiutils.LocatorBottomSheetDialog
 
 
 /**
