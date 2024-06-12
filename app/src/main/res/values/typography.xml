@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<!-- Largest headline -->
+	<style name="TextAppearance.Locator.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
+		<item name="android:textSize">40sp</item>
+		<item name="lineHeight">48sp</item>
+		<item name="fontFamily">sans-serif-light</item>
+	</style>
+
+
+</resources>
