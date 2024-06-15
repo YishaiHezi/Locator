@@ -14,7 +14,7 @@
 
 	<style name="Widget.Locator.Button.Borderless" parent="Widget.Locator.Button">
 		<item name="android:backgroundTint">?attr/colorSurface</item>
-		<item name="android:textColor">?attr/colorPrimary</item>
+		<item name="android:textColor">?attr/textColorPrimary</item>
 	</style>
 
 	<style name="Widget.Locator.Button.Regular" parent="Widget.Locator.Button">

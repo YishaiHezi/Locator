@@ -15,6 +15,12 @@
 		<item name="colorOnSecondary">@color/black</item>
 
 
+		<item name="colorOnSurface">@color/gray_68</item>
+
+		<item name="textColorPrimary">?attr/colorOnSurface</item>
+
+		<item name="colorDivider">@color/gray_16_alpha_60</item>
+
 		<!-- Status bar color. -->
 		<item name="android:statusBarColor">?attr/colorPrimary</item>
 
