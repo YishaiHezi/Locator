@@ -11,8 +11,10 @@ import android.widget.Button
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lightme.locator.R
@@ -75,6 +77,17 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	private fun initRecyclerView(){
 		recyclerView?.setLayoutManager(LinearLayoutManager(this))
 		recyclerView?.setAdapter(adapter)
+
+		// Add a divider between the elements.
+		val context = recyclerView?.context ?: return
+		val divider = ContextCompat.getDrawable(context, R.drawable.divider_horizontal)
+		val dividerItemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL).apply {
+			if (divider != null) {
+				setDrawable(divider)
+			}
+		}
+
+		recyclerView?.addItemDecoration(dividerItemDecoration)
 	}
 
 
