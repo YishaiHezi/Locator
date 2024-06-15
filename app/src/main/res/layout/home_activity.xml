@@ -10,6 +10,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:background="?attr/colorPrimary"
+		android:elevation="5dp"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toTopOf="parent">
@@ -20,8 +21,8 @@
 			android:layout_height="wrap_content"
 			android:layout_marginTop="@dimen/twice_screen_edge"
 			android:text="@string/header_title"
-			android:textColor="?attr/colorOnPrimary"
 			android:textAppearance="@style/TextAppearance.Locator.Headline3"
+			android:textColor="?attr/colorOnPrimary"
 			app:layout_constraintBottom_toTopOf="@id/search_view"
 			app:layout_constraintEnd_toEndOf="parent"
 			app:layout_constraintStart_toStartOf="parent"
