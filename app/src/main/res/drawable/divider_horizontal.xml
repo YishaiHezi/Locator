@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-	android:shape="rectangle">
-	<size android:height="2dp" />
-	<solid android:color="?attr/colorDivider" />
-</shape>
+<inset
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:insetLeft="16dp"
+	android:insetRight="16dp"
+	android:drawable="@drawable/divider_horizontal_full"/>
