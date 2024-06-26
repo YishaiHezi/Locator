@@ -74,27 +74,17 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Initialize the recyclerView.
 	 */
-	private fun initRecyclerView(){
+	private fun initRecyclerView() {
 		recyclerView?.setLayoutManager(LinearLayoutManager(this))
 		recyclerView?.setAdapter(adapter)
-
-		// Add a divider between the elements.
-		val context = recyclerView?.context ?: return
-		val divider = ContextCompat.getDrawable(context, R.drawable.divider_horizontal)
-		val dividerItemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL).apply {
-			if (divider != null) {
-				setDrawable(divider)
-			}
-		}
-
-		recyclerView?.addItemDecoration(dividerItemDecoration)
+		addDividers(recyclerView)
 	}
 
 
 	/**
 	 * Initialize the adapter.
 	 */
-	private fun initAdapter(): UserAdapter{
+	private fun initAdapter(): UserAdapter {
 		val userList: List<UserDetails> = RecentSearchesManager.getRecentSearches(this)
 		return UserAdapter(userList, this, supportFragmentManager)
 	}
@@ -103,7 +93,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Initialize the SearchView.
 	 */
-	private fun initSearchView(searchView: SearchView){
+	private fun initSearchView(searchView: SearchView) {
 		val listener = object : SearchView.OnQueryTextListener {
 			override fun onQueryTextSubmit(query: String): Boolean {
 				// Perform here the final search when the user clicks on the search button, if needed.
@@ -116,8 +106,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 				// Perform the live search as the user types
 				if (newText.length >= 2) { // This is to prevent too many requests, adjust the number as needed
 					performSearch(newText)
-				}
-				else {
+				} else {
 					showRecentUsersSearches()
 				}
 
@@ -130,15 +119,31 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 
 
 	/**
+	 * Add dividers between elements to the recyclerView.
+	 */
+	private fun addDividers(recyclerView: RecyclerView?) {
+		val context = recyclerView?.context ?: return
+		val divider = ContextCompat.getDrawable(context, R.drawable.divider_horizontal)
+		val dividerItemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL).apply {
+			if (divider != null) {
+				setDrawable(divider)
+			}
+		}
+
+		recyclerView.addItemDecoration(dividerItemDecoration)
+	}
+
+
+	/**
 	 * Perform the search.
 	 */
-	private fun performSearch(text: String){
+	private fun performSearch(text: String) {
 		searchJob = lifecycleScope.launch {
 			delay(1000)
 			val usersResult = findUsersByText(text)
 
 			usersResult.fold(
-				{ usersDetails -> showResults(usersDetails)},
+				{ usersDetails -> showResults(usersDetails) },
 				{ showResults(emptyList()) }
 			)
 		}
@@ -148,8 +153,8 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Find the users by prefix. Call the server.
 	 */
-	private suspend fun findUsersByText(text: String): Result<List<UserDetails>>{
-		return withContext(Dispatchers.IO){
+	private suspend fun findUsersByText(text: String): Result<List<UserDetails>> {
+		return withContext(Dispatchers.IO) {
 			runCatching {
 				val serverConnection = RequestHandler.getServerConnection()
 				val users = serverConnection.getUsersByPrefix(text)
@@ -163,11 +168,10 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Show the results.
 	 */
-	private fun showResults(users: List<UserDetails>){
+	private fun showResults(users: List<UserDetails>) {
 		if (users.isNotEmpty()) {
 			adapter?.updateUsersList(users)
-		}
-		else {
+		} else {
 			showRecentUsersSearches()
 		}
 	}
@@ -176,7 +180,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Show the recent users searches.
 	 */
-	private fun showRecentUsersSearches(){
+	private fun showRecentUsersSearches() {
 		val recentUsersList: List<UserDetails> = RecentSearchesManager.getRecentSearches(this)
 		adapter?.updateUsersList(recentUsersList)
 	}
@@ -209,10 +213,11 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * The adapter for showing the search results.
 	 */
-	class UserAdapter(private var userList: List<UserDetails>,
-	                  private val userClickedListener: OnUserClickedListener,
-	                  private val fragmentManager: FragmentManager) :
-		RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+	class UserAdapter(
+		private var userList: List<UserDetails>,
+		private val userClickedListener: OnUserClickedListener,
+		private val fragmentManager: FragmentManager
+	) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
 		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -242,7 +247,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 		/**
 		 * Update the users list.
 		 */
-		fun updateUsersList(newUserDetails: List<UserDetails>){
+		fun updateUsersList(newUserDetails: List<UserDetails>) {
 			userList = newUserDetails
 			notifyDataSetChanged()
 		}
@@ -251,7 +256,7 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 		/**
 		 * Show the delete confirmation dialog.
 		 */
-		private fun showDeleteConfirmation(view: View, user: UserDetails){
+		private fun showDeleteConfirmation(view: View, user: UserDetails) {
 			val headerText = view.context.getString(R.string.delete_item)
 			val buttonText = view.context.getString(R.string.delete)
 			val action = createDeleteAction(view, user)
@@ -265,10 +270,10 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 		 * Create the delete action.
 		 */
 		private fun createDeleteAction(view: View, user: UserDetails): LocatorBottomSheetDialog.Action {
-			return object : LocatorBottomSheetDialog.Action(){
+			return object : LocatorBottomSheetDialog.Action() {
 				override fun execute() {
 					val users = LocalMemoryManager.getUsers(view.context)
-					val filteredUsers = users.filter { currentUser -> currentUser.id !=  user.id }
+					val filteredUsers = users.filter { currentUser -> currentUser.id != user.id }
 					LocalMemoryManager.saveUsers(view.context, filteredUsers)
 					updateUsersList(filteredUsers)
 				}
