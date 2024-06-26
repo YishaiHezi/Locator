@@ -44,28 +44,12 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	private var searchJob: Job? = null
 
 
-	/**
-	 * The recycler view.
-	 */
-	private var recyclerView: RecyclerView? = null
-
-
-	/**
-	 * The adapter for showing the search results.
-	 */
-	private var adapter: UserAdapter? = null
-
-
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		adapter = initAdapter()
-
-		recyclerView = findViewById(R.id.recycler_view)
-		initRecyclerView()
-
-		val searchView: SearchView = findViewById(R.id.search_view)
-		initSearchView(searchView)
+		val adapter = initAdapter()
+		initRecyclerView(adapter)
+		initSearchView(adapter)
 
 		logData()
 	}
@@ -74,9 +58,10 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Initialize the recyclerView.
 	 */
-	private fun initRecyclerView() {
-		recyclerView?.setLayoutManager(LinearLayoutManager(this))
-		recyclerView?.setAdapter(adapter)
+	private fun initRecyclerView(adapter: UserAdapter) {
+		val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
+		recyclerView.setLayoutManager(LinearLayoutManager(this))
+		recyclerView.setAdapter(adapter)
 		addDividers(recyclerView)
 	}
 
@@ -93,7 +78,9 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Initialize the SearchView.
 	 */
-	private fun initSearchView(searchView: SearchView) {
+	private fun initSearchView(adapter: UserAdapter) {
+		val searchView: SearchView = findViewById(R.id.search_view)
+
 		val listener = object : SearchView.OnQueryTextListener {
 			override fun onQueryTextSubmit(query: String): Boolean {
 				// Perform here the final search when the user clicks on the search button, if needed.
@@ -105,9 +92,9 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 
 				// Perform the live search as the user types
 				if (newText.length >= 2) { // This is to prevent too many requests, adjust the number as needed
-					performSearch(newText)
+					performSearch(newText, adapter)
 				} else {
-					showRecentUsersSearches()
+					showRecentUsersSearches(adapter)
 				}
 
 				return true
@@ -137,14 +124,14 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Perform the search.
 	 */
-	private fun performSearch(text: String) {
+	private fun performSearch(text: String, adapter: UserAdapter) {
 		searchJob = lifecycleScope.launch {
 			delay(1000)
 			val usersResult = findUsersByText(text)
 
 			usersResult.fold(
-				{ usersDetails -> showResults(usersDetails) },
-				{ showResults(emptyList()) }
+				{ usersDetails -> showResults(usersDetails, adapter) },
+				{ showResults(emptyList(), adapter) }
 			)
 		}
 	}
@@ -168,11 +155,11 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Show the results.
 	 */
-	private fun showResults(users: List<UserDetails>) {
+	private fun showResults(users: List<UserDetails>, adapter: UserAdapter) {
 		if (users.isNotEmpty()) {
-			adapter?.updateUsersList(users)
+			adapter.updateUsersList(users)
 		} else {
-			showRecentUsersSearches()
+			showRecentUsersSearches(adapter)
 		}
 	}
 
@@ -180,9 +167,9 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 	/**
 	 * Show the recent users searches.
 	 */
-	private fun showRecentUsersSearches() {
+	private fun showRecentUsersSearches(adapter: UserAdapter) {
 		val recentUsersList: List<UserDetails> = RecentSearchesManager.getRecentSearches(this)
-		adapter?.updateUsersList(recentUsersList)
+		adapter.updateUsersList(recentUsersList)
 	}
 
 
