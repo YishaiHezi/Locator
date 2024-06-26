@@ -56,6 +56,15 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 
 
 	/**
+	 * Initialize the adapter.
+	 */
+	private fun initAdapter(): UserAdapter {
+		val userList: List<UserDetails> = RecentSearchesManager.getRecentSearches(this)
+		return UserAdapter(userList, this, supportFragmentManager)
+	}
+
+
+	/**
 	 * Initialize the recyclerView.
 	 */
 	private fun initRecyclerView(adapter: UserAdapter) {
@@ -63,15 +72,6 @@ class HomeActivity : AppCompatActivity(R.layout.home_activity), OnUserClickedLis
 		recyclerView.setLayoutManager(LinearLayoutManager(this))
 		recyclerView.setAdapter(adapter)
 		addDividers(recyclerView)
-	}
-
-
-	/**
-	 * Initialize the adapter.
-	 */
-	private fun initAdapter(): UserAdapter {
-		val userList: List<UserDetails> = RecentSearchesManager.getRecentSearches(this)
-		return UserAdapter(userList, this, supportFragmentManager)
 	}
 
 
