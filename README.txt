@@ -17,5 +17,5 @@ This app contains 3 screens:
 3. map screen - after choosing a user, it shows its last known location.
 
 Note:
-The Current_status file (in this project) contains the current
-status of the app in terms of development.
+For future development, see the Current_status file (in this project) that contains
+the current status of the app.
