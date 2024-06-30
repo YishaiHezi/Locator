@@ -1,0 +1,15 @@
+Where am I:
+
+
+current status:
+After running the app (and the server) - we can do a search for other users, and
+when clicking on one of them - we can see their last known location.
+Currently this app works only locally. In order to publish it - the server needs to
+be published in aws, and this app needs to be updated to use the updated apis of the server.
+
+
+Need to fix:
+when the app is killed by the user, and the phone is sleeping -
+it can't get the location of the user (but I see that the firebase service gets the message).
+the reason is that android limit the access to the location of the user in some cases (like this I guess),
+so it will not consume battery or something. need to find a solution for it.
